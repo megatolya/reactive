@@ -38,14 +38,10 @@
     "disallowEmptyBlocks": true,
 
     "requireParenthesesAroundIIFE": true,
-    "requireSpacesInFunctionDeclaration": {
-        "beforeOpeningCurlyBrace": true
-    },
     "disallowSpacesInFunctionDeclaration": {
         "beforeOpeningRoundBrace": true
     },
     "requireSpacesInAnonymousFunctionExpression": {
-        "beforeOpeningRoundBrace": true,
         "beforeOpeningCurlyBrace": true
     },
     "disallowSpacesInNamedFunctionExpression": {

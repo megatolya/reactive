@@ -11,7 +11,7 @@ function deepCopy(from, to) {
     }
 
     if ($.isArray(from)) {
-        from.forEach(function(val) {
+        from.forEach(function (val) {
             to.push(deepCopy(val));
         });
     }
@@ -25,4 +25,3 @@ function deepCopy(from, to) {
 
     return to;
 }
-

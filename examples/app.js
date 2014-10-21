@@ -94,7 +94,6 @@
         settings.set('linkText', '<i>im from model lol</i>');
     }, 2000);
 
-
     var models = {
         settings: window.settings,
         anotherModel: anotherModel

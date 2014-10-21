@@ -15,11 +15,13 @@ var blox = (function($) {
 
             for (var key in obj1) {
                 if (typeof obj1[key] === 'object' && typeof obj2[key] === 'object') {
-                    if (!isSameObjects(obj1[key], obj2[key]))
+                    if (!isSameObjects(obj1[key], obj2[key])) {
                         return false;
+                    }
                 } else {
-                    if (obj1[key] !== obj2[key])
+                    if (obj1[key] !== obj2[key]) {
                         return false;
+                    }
                 }
             }
             return Object.keys(obj1).length === Object.keys(obj2).length;
@@ -65,13 +67,13 @@ var blox = (function($) {
         this._attrs = $.extend({}, bemjson.attrs || {});
         this._attrs['data-blox'] = this._id;
 
-
         this._bindings = this._extractBindings(bemjson.bind);
         this._bindings.forEach(function(binding) {
             var model = models[binding];
 
-            if (!model)
+            if (!model) {
                 throw new Error('No model such was supplied: ' + binding);
+            }
 
             model.on('change', function(model) {
                 if (isSameObjects(this._previousModelChanged, model.changed)) {
@@ -221,7 +223,6 @@ var blox = (function($) {
             throw new TypeError('Uknown type of bemjson: ' + bemjson);
         },
 
-
         getDomElement: function() {
             return adapter('[data-blox=%id]'.replace('%id', this._id));
         }
@@ -319,14 +320,12 @@ var blox = (function($) {
         return false;
     };
 
-
     function Element(bemjson, parent) {
         Primitive.apply(this, arguments);
     }
 
     Element.prototype = Object.create(Block.prototype);
     Element.prototype.constructor = Element;
-
 
     function processBemJson(bemjson) {
         if ($.isArray(bemjson)) {
