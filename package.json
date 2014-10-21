@@ -1,0 +1,46 @@
+{
+  "author": "Anatoliy Ostrovskiy <megatolya@yandex-team.ru>",
+  "description": "BEM MVC framework for web apps.",
+  "name": "blox",
+  "version": "1.0.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/megatolya/blox"
+  },
+  "licence": "MIT",
+  "contributors": [
+    "Anatoliy Ostrovskiy <megatolya@yandex-team.ru>"
+  ],
+  "dependencies": {
+    "backbone": "^1.1.2",
+    "bh": "^3.1.4",
+    "jquery": "^2.1.1",
+    "underscore": "^1.7.0"
+  },
+  "devDependencies": {
+    "mocha": "1.x",
+    "chai": "1.x",
+    "istanbul": "0.3.x",
+    "jshint": "2.x",
+    "jscs": "1.5.x"
+  },
+  "engines": {
+    "node": ">= 0.10"
+  },
+  "scripts": {
+    "test": "echo 123",
+    "jshint": "jshint .",
+    "unit-test": "mocha -u bdd -R spec --recursive test",
+    "unit-test-coverage": "istanbul cover ./node_modules/mocha/bin/_mocha -- -u bdd -R spec --recursive test",
+    "check-style": "./node_modules/jscs/bin/jscs ."
+  },
+  "bugs": {
+    "url": "https://github.com/megatolya/blox/issues"
+  },
+  "homepage": "https://github.com/megatolya/blox",
+  "main": "blox.js",
+  "directories": {
+    "example": "examples"
+  },
+  "license": "MIT"
+}
