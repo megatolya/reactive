@@ -1,8 +1,3 @@
-// TODO ускорение
-// 1. отрисовка
-// 3. нахождение сиблингов
-// 2. подписка
-
 var blox = (function($) {
     function FixmeError() {}
     FixmeError.prototype = new Error;
