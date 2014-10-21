@@ -1,6 +1,4 @@
 (function(undefined) {
-    var bh = new BH();
-
     bh.match('link', function(ctx) {
         ctx.tag('a');
         ctx.attr('href', ctx.param('url') || ctx.param('href'));
@@ -11,11 +9,16 @@
     });
 
     var Settings = Backbone.Model.extend();
+    var AnotherModel = Backbone.Model.extend();
 
     var bemjson = function() {
         return [
             {
                 block: 'container',
+                bind: ['settings', 'anotherModel'],
+                showIf: function(settings, anotherModel) {
+                    return anotherModel.get('a');
+                },
                 content: [
                     {
                         block: 'link',
@@ -28,7 +31,6 @@
                             return 'Text from model: ' + settings.get('linkText');
                         }
                     },
-                    //' ',
                     {
                         block: 'link',
                         url: 'http://yandex.ru',
@@ -40,7 +42,6 @@
                             return 'Text from model: ' + settings.get('linkText2');
                         }
                     },
-                    //' ',
                     {
                         block: 'link',
                         url: 'http://yandex.ru',
@@ -53,21 +54,50 @@
                         }
                     }
                 ]
+            },
+            {
+                block: 'container',
+                mods: {
+                    index: '2'
+                },
+                content: [
+                    {
+                        block: 'link',
+                        url: 'http://mail.ru',
+                        content: 'mail.ru'
+                    },
+                    {
+                        block: 'link',
+                        url: 'http://gmail.com',
+                        content: 'gmail.com'
+                    },
+                    {
+                        block: 'link',
+                        url: 'http://ya.ru',
+                        bind: 'anotherModel',
+                        content: function(anotherModel) {
+                            return anotherModel.get('a');
+                        }
+                    }
+                ]
             }
         ];
     };
 
     window.settings = new Settings();
+    window.anotherModel = new AnotherModel();
 
     setTimeout(function() {
-        console.log('---');
         settings.set('linkText2', '123')
     }, 1000);
+    setTimeout(function() {
+        settings.set('linkText', '<i>im from model lol</i>');
+    }, 2000);
 
-    settings.set('linkText', '<i>im from model lol</i>');
 
     var models = {
-        settings: window.settings
+        settings: window.settings,
+        anotherModel: anotherModel
     };
 
     $(function() {

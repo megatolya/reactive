@@ -1,5 +1,8 @@
 var blox = (function($) {
-    function FixmeError() {}
+    function FixmeError(message) {
+        this.message = message
+    }
+
     FixmeError.prototype = new Error;
     FixmeError.constructor = FixmeError;
     FixmeError.name = 'FIXME';
@@ -44,52 +47,78 @@ var blox = (function($) {
         var _this = this;
 
         allElements.push(this);
-        this._attrs = $.extend({}, bemjson.attrs || {});
         this._id = uniq();
+
+        if (!Primitive.isPrimitive(bemjson)) {
+            this._params = this._extractParams(bemjson);
+            this._mods = $.extend({}, bemjson.mods || {});
+
+            this._content = this._extractContent(bemjson.content);
+
+            if (!this._content) {
+                this._children = this._extractChildren(bemjson.content);
+            }
+        } else {
+            throw new FixmeError('Plain types in bemjson not implemented yet');
+        }
+
+        this._attrs = $.extend({}, bemjson.attrs || {});
         this._attrs['data-blox'] = this._id;
 
-        this._params = this._extractParams(bemjson);
-        this._mods = $.extend({}, bemjson.mods || {});
-
-        this._content = this._extractContent(bemjson.content);
-
-        if (!this._content) {
-            this._children = this._extractChildren(bemjson.content);
-        }
 
         this._bindings = this._extractBindings(bemjson.bind);
         this._bindings.forEach(function(binding) {
             var model = models[binding];
 
             if (!model)
-                throw new Error('No model called was supplied ' + binding);
+                throw new Error('No model such was supplied: ' + binding);
 
             model.on('change', function(model) {
                 if (isSameObjects(this._previousModelChanged, model.changed)) {
                     return;
                 }
 
-                _this._previousModelChanged = model.changed;
-
-                _this.repaint();
-            });
-        });
+                this._previousModelChanged = model.changed;
+                this.repaint();
+            }, this);
+        }, this);
 
         // TODO
         this._previousModelChanged = {};
 
         var showIf = bemjson.showIf;
 
-        this._showIf = showIf;
-
         this.isShown = typeof showIf === 'function'
             ? function() {
-                return this._wasShown = Boolean(showIf.apply(null, _this._getModelsByBindings()));
+                return this.wasShown = Boolean(showIf.apply(null, _this._getModelsByBindings()));
             }
             : function() {
-                return this._wasShown = true;
+                return this.wasShown = true;
             };
     }
+
+    /**
+     *
+     * Вида:
+     * {
+     *     bind,
+     *     content
+     * }
+     */
+    Primitive.primitiveToBemjson = function(data) {
+        // в целях отладки
+        if (!Primitive.isPrimitive(data)) {
+            throw new TypeError('Not a primitive ' + data + ' ' + JSON.stringify(data));
+        }
+
+        if ($.isPlainObject(data)) {
+            return data;
+        } else {
+            return {
+                content: data
+            };
+        }
+    };
 
     Primitive.isPrimitive = function(bemjson) {
         if (bemjson) {
@@ -110,15 +139,19 @@ var blox = (function($) {
         constructor: Primitive,
 
         toBemjson: function() {
-            return this._val;
+            return this._content.apply(null, this._bindings);
         },
 
         _extractBindings: function(bindings) {
             if (typeof bindings === 'string') {
-                return [bindings];
+                return bindings.split(' ');
             }
 
             return bindings || [];
+        },
+
+        _getAttrs: function() {
+            return this._attrs;
         },
 
         // TODO rename getModels?
@@ -159,6 +192,16 @@ var blox = (function($) {
         },
 
         _extractContent: function(content) {
+            // TODO isPrimitive
+            if (content === null
+                    || content === undefined
+                    || typeof content === 'string'
+                    || typeof content === 'number'
+                ) {
+                return function() {
+                    return content;
+                }
+            }
             return typeof content === 'function'
                 ? content
                 : null;
@@ -175,7 +218,7 @@ var blox = (function($) {
                 });
             }
 
-            throw new TypeError("Uknown type of bemjson: " + typeof bemjson);
+            throw new TypeError('Uknown type of bemjson: ' + bemjson);
         },
 
 
@@ -193,7 +236,7 @@ var blox = (function($) {
             return new Block(bemjson, parent);
         }
 
-        throw new TypeError("Uknown type of bemjson: " + typeof bemjson);
+        throw new TypeError('Uknown type of bemjson: ' + typeof bemjson);
     }
 
     function Block(bemjson, parent) {
@@ -210,8 +253,6 @@ var blox = (function($) {
 
     Block.prototype.toBemjson = function() {
         if (!this.isShown()) {
-            console.log(this._showIf);
-            console.log(this._id, null);
             return null;
         }
 
@@ -220,14 +261,13 @@ var blox = (function($) {
             mods: this._getMods(),
             // getchildrenorcontent
             content: this._getContent(),
-            attrs: this._attrs
+            attrs: this._getAttrs()
         };
 
         for (var key in this._params) {
             res[key] = this._params[key];
         }
 
-        console.log(this._id, res);
         return res;
     };
 
@@ -245,7 +285,11 @@ var blox = (function($) {
     };
 
     Block.prototype.repaint = function(prevVal) {
-        if (this._wasShown) {
+        if (this.parent && !this.parent.isShown()) {
+            return;
+        }
+
+        if (this.wasShown) {
             var domNode = this.getDomElement();
 
             domNode.replaceWith(bh.apply(this.toBemjson()));
@@ -253,8 +297,14 @@ var blox = (function($) {
             var prev = this.getPreviousSibling();
 
             // TODO while
-            if (!prev) {
-                this.parent.getDomElement().prepend(bh.apply(this.toBemjson()));
+            if (!prev || !prev.wasShown) {
+                var html = bh.apply(this.toBemjson());
+
+                if (!this.parent) {
+                    adapter(adapter().root).append(html);
+                } else {
+                    this.parent.getDomElement().prepend(html);
+                }
             } else {
                 this.getPreviousSibling().getDomElement().after(bh.apply(this.toBemjson()));
             }
@@ -291,8 +341,11 @@ var blox = (function($) {
             return new Primitive(bemjson, null);
         }
 
-        throw new TypeError("Uknown type of bemjson: " + typeof bemjson);
+        throw new TypeError('Uknown type of bemjson: ' + typeof bemjson);
     }
+
+    function commonProps() {}
+    commonProps.prototype.root = 'body';
 
     function BemAdapter(query) {
         if (!(this instanceof BemAdapter)) {
@@ -303,7 +356,8 @@ var blox = (function($) {
         this[0] = document.querySelector(this._query);
     }
 
-    BemAdapter.prototype = {
+    BemAdapter.prototype = new commonProps();
+    $.extend(BemAdapter.prototype, {
         constructor: BemAdapter,
 
         remove: function() {
@@ -320,7 +374,7 @@ var blox = (function($) {
         },
 
         prepend: function(html) {
-            this[0].innerHTML = this[0].innerHTML + html;
+            this[0].innerHTML = html += this[0].innerHTML;
         },
 
         after: function(html) {
@@ -330,7 +384,7 @@ var blox = (function($) {
         before: function(html) {
             this[0].outerHTML = html + this[0].outerHTML;
         }
-    };
+    });
 
     return {
         init: function blox_init(_bemjson, _models, _adapter, _bh) {
@@ -339,9 +393,10 @@ var blox = (function($) {
             bh = _bh;
             adapter = _adapter;
             models = $.extend({}, _models);
-            this._tree = this.processBemJson(_bemjson);
+            var tree = this.processBemJson(_bemjson);
+            window.tree = tree;
 
-            var html = _bh.apply(this._tree.map(function(elem) {
+            var html = _bh.apply(tree.map(function(elem) {
                 return elem.toBemjson();
             }));
             $('body').html(html);
