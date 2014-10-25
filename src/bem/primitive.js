@@ -1,4 +1,4 @@
-var FixmeError = require('./errors').FixmeError;
+var FixmeError = require('../errors').FixmeError;
 var utils = require('../utils');
 
 var i = 0;
@@ -11,7 +11,9 @@ function Primitive(bemjson, parent) {
     this.parent = parent;
     var _this = this;
 
-    allElements.push(this);
+    this._allElements = require('../vars').allElements;
+    this._allElements.push(this);
+
     this._id = uniq();
 
     if (!Primitive.isPrimitive(bemjson)) {
@@ -129,7 +131,7 @@ Primitive.prototype = {
     },
 
     getPreviousSibling: function() {
-        var prevBlock = allElements[allElements.indexOf(this) - 1];
+        var prevBlock = this._allElements[this._allElements.indexOf(this) - 1];
 
         if (prevBlock && prevBlock.parent === this.parent) {
             return prevBlock;
@@ -190,10 +192,10 @@ Primitive.prototype = {
     },
 
     getDomElement: function() {
+        var adapter = require('../vars').adapter;
+
         return adapter('[data-blox=%id]'.replace('%id', this._id));
     }
 };
 
-console.log('haha');
-console.log(Primitive.prototype, '123');
 module.exports = Primitive;

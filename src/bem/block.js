@@ -49,6 +49,8 @@ utils.extend(Block.prototype, {
     },
 
     repaint: function(prevVal) {
+        var adapter = require('../vars').adapter;
+
         if (this.parent && !this.parent.isShown()) {
             return;
         }
@@ -76,7 +78,8 @@ utils.extend(Block.prototype, {
     },
 
     toHTML: function() {
-        return bh.apply(this.toBemjson());
+        var templateEngine = require('../vars').templateEngine;
+        return templateEngine.apply(this.toBemjson());
     }
 });
 

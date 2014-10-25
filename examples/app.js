@@ -90,6 +90,9 @@
     window.anotherModel = new AnotherModel();
 
     setTimeout(function() {
+        anotherModel.set('a', 'anotherModel');
+    }, 2000);
+    setTimeout(function() {
         settings.set('linkText2', '123')
     }, 1000);
     setTimeout(function() {

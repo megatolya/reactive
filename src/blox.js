@@ -1,16 +1,11 @@
-
-var adapter;
-var bh;
-var allElements = window.allElements = [];
+var utils = require('./utils');
 
 module.exports =  {
+    // TODO check params
     init: function blox_init(params) {
-        var _this = this;
-        var models = require('./vars').models;
+        var globals = require('./vars');
 
-        bh = params.templateEngine;
-        adapter = params.adapter;
-        $.extend(models, params.models);
+        utils.extend(globals, params);
 
         var tree = this.processBemJson(params.bemjson);
         window.tree = tree;
@@ -18,12 +13,11 @@ module.exports =  {
         var html = params.templateEngine.apply(tree.map(function(elem) {
             return elem.toBemjson();
         }));
-        adapter('body').html(html);
+        globals.adapter('body').html(html);
     },
 
     processBemJson: function(bemjson) {
         var bem = require('./bem');
-        var utils = require('./utils');
 
         if (Array.isArray(bemjson)) {
             return bemjson.map(function(child) {
