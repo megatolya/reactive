@@ -11,7 +11,8 @@ function Primitive(bemjson, parent) {
     this.parent = parent;
     var _this = this;
 
-    this._allElements = require('../vars').allElements;
+    this.iterableScope = this._createScope(parent);
+    window.allElements = this._allElements = require('../vars').allElements;
     this._allElements.push(this);
 
     this._id = uniq();
@@ -32,26 +33,31 @@ function Primitive(bemjson, parent) {
     this._attrs = utils.extend({}, bemjson.attrs || {});
     this._attrs['data-blox'] = this._id;
 
-    this._bindings = this._extractBindings(bemjson.bind);
     this._models = require('../vars').models;
+
+    if (bemjson.iterate) {
+        this._iterable = true;
+        var iteratingBind = bemjson.iterate.split(' ')[0].trim();
+        this._iteratingBind = iteratingBind;
+        this.iterableScope[iteratingBind] = this._models[bemjson.iterate.split(' ')[2].trim()];
+    }
+
+    this._bindings = this._extractBindings(bemjson.bind);
     this._bindings.forEach(function(binding) {
         var model = this._models[binding];
 
         if (!model) {
-            throw new Error('No model such was supplied: ' + binding);
+            model = this.iterableScope[binding];
+            if (!model) {
+                throw new Error('No such model was supplied: ' + binding);
+            }
         }
 
-        model.on('change', function(model) {
-            if (utils.isSameObjects(this._previousModelChanged, model.changed)) {
-                return;
-            }
-
-            this._previousModelChanged = model.changed;
-            this.repaint();
-        }, this);
+        model.on('change', this._onModelChanged, this);
+        model.on('remove', this._onModelChanged, this);
+        model.on('add', this._onModelChanged, this);
     }, this);
 
-    // TODO
     this._previousModelChanged = null;
 
     var showIf = bemjson.showIf;
@@ -108,6 +114,25 @@ Primitive.prototype = {
 
     toBemjson: function() {
         return this._content.apply(null, this._bindings);
+    },
+
+    _onModelChanged: function(event) {
+        if (utils.isSameObjects(this._previousModelChanged, event.changed)) {
+            return;
+        }
+
+        this._previousModelChanged = event.changed;
+        this.repaint();
+    },
+
+    _createScope: function(parent) {
+        var parentScope = {};
+
+        if (parent) {
+            parentScope = parent.iterableScope;
+        }
+
+        return Object.create(parentScope);
     },
 
     _extractBindings: function(bindings) {
@@ -169,7 +194,7 @@ Primitive.prototype = {
             ) {
             return function() {
                 return content;
-            }
+            };
         }
         return typeof content === 'function'
             ? content
@@ -181,7 +206,7 @@ Primitive.prototype = {
         var bem = require('./');
 
         if (utils.isPlainObject(bemjson)) {
-            return bem.createBemObject(bemjson, parent);
+            return [bem.createBemObject(bemjson, parent)];
         } else if (Array.isArray(bemjson)) {
             return bemjson.map(function(child) {
                 return bem.createBemObject(child, parent);

@@ -9,9 +9,24 @@
     bh.match('container', function(ctx) {
         ctx.tag('div');
     });
+    bh.match('container_type_list', function(ctx) {
+        ctx.tag('ul');
+    });
+    bh.match('list-item', function(ctx) {
+        ctx.tag('li');
+    });
+
 
     var Settings = Backbone.Model.extend();
     var AnotherModel = Backbone.Model.extend();
+    var Bookmark = Backbone.Model.extend({
+        initialize: function(url) {
+            this.set('url', url);
+        }
+    });
+    var BookmarksList=  Backbone.Collection.extend({
+        model: Bookmark
+    });
 
     var bemjson = function() {
         return [
@@ -82,38 +97,40 @@
                         }
                     }
                 ]
+            },
+            {
+                block: 'container',
+                mods: {
+                    type: 'list'
+                },
+                content: {
+                    iterate: 'item in bookmarksList',
+                    bind: 'item',
+                    block: 'list-item',
+                    content: function(item) {
+                        return item.get('url');
+                    }
+                }
             }
         ];
     };
 
     window.settings = new Settings();
     window.anotherModel = new AnotherModel();
+    window.Bookmark = Bookmark;
+    window.bookmarksList = new BookmarksList([new Bookmark('http://one.ru'), new Bookmark('http://two.ru'), new Bookmark('http://three.ru')]);
 
-    setTimeout(function() {
-        anotherModel.set('a', 'anotherModel');
-    }, 300);
-    setTimeout(function() {
-        settings.set('linkText2', '123')
-    }, 100);
-    setTimeout(function() {
-        settings.set('linkText', '<i>im from model lol</i>');
-    }, 200);
-    setTimeout(function() {
-        anotherModel.set('a', null);
-    }, 350);
-    setTimeout(function() {
-        anotherModel.set('a', 'anotherModel');
-    }, 400);
-
-    var models = {
-        settings: window.settings,
-        anotherModel: anotherModel
-    };
+    anotherModel.set('a', 'asd');
+    settings.set('linkText', 'asd2');
 
     $(function() {
         blox.init({
             bemjson: bemjson(),
-            models: models,
+            models: {
+                settings: settings,
+                anotherModel: anotherModel,
+                bookmarksList: bookmarksList
+            },
             adapter: blox.adapters.native,
             templateEngine: bh
         });

@@ -20,19 +20,33 @@ utils.extend(Block.prototype, {
             return null;
         }
 
-        var res = {
-            block: this._name,
-            mods: this._getMods(),
-            // getchildrenorcontent
-            content: this._getContent(),
-            attrs: this._getAttrs()
-        };
+        if (this._iterable) {
+            var blocks = this.iterableScope[this._iteratingBind].models.map(function(model) {
+                return {
+                    block: this._name,
+                    mods: this._getMods(),
+                    content: this._content ? this._content(model) : (this._children || []).map(function(child) {
+                        return child.toBemjson();
+                    }),
+                    attrs: this._getAttrs()
+                }
+            }, this);
+        } else {
+            var block = {
+                block: this._name,
+                mods: this._getMods(),
+                // getchildrenorcontent
+                content: this._getContent(),
+                attrs: this._getAttrs()
+            };
 
-        for (var key in this._params) {
-            res[key] = this._params[key];
+            for (var key in this._params) {
+                block[key] = this._params[key];
+            }
         }
 
-        return res;
+
+        return blocks || block;
     },
 
     // TODO optimize
@@ -48,6 +62,7 @@ utils.extend(Block.prototype, {
         }
     },
 
+    // TODO если перерисовали родителя, не нужно перерисовывать детей
     repaint: function(prevVal) {
         var adapter = require('../vars').adapter;
 
@@ -62,7 +77,7 @@ utils.extend(Block.prototype, {
         } else {
             var prev = this.getPreviousSibling();
 
-            // TODO while
+            // TODO while?
             if (!prev || !prev.wasShown) {
                 var html = this.toHTML();
 
