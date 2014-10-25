@@ -11,18 +11,20 @@
   "contributors": [
     "Anatoliy Ostrovskiy <megatolya@yandex-team.ru>"
   ],
-  "dependencies": {
+  "dependencies": {},
+  "devDependencies": {
     "backbone": "^1.1.2",
     "bh": "^3.1.4",
-    "jquery": "^2.1.1",
-    "underscore": "^1.7.0"
-  },
-  "devDependencies": {
-    "mocha": "1.x",
     "chai": "1.x",
+    "gulp": "^3.8.9",
+    "gulp-browserify": "^0.5.0",
+    "gulp-rename": "^1.2.0",
     "istanbul": "0.3.x",
+    "jquery": "^2.1.1",
+    "jscs": "1.5.x",
     "jshint": "2.x",
-    "jscs": "1.5.x"
+    "mocha": "1.x",
+    "underscore": "^1.7.0"
   },
   "engines": {
     "node": ">= 0.10"

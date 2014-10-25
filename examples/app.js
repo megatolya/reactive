@@ -1,4 +1,6 @@
 (function(undefined) {
+    var bh = new BH;
+
     bh.match('link', function(ctx) {
         ctx.tag('a');
         ctx.attr('href', ctx.param('url') || ctx.param('href'));
@@ -100,6 +102,11 @@
     };
 
     $(function() {
-        blox.init(bemjson(), models, blox.adapters.native, bh);
+        blox.init({
+            bemjson: bemjson(),
+            models: models,
+            adapter: blox.adapters.native,
+            templateEngine: bh
+        });
     });
 })();
