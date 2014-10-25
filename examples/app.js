@@ -91,13 +91,19 @@
 
     setTimeout(function() {
         anotherModel.set('a', 'anotherModel');
-    }, 2000);
+    }, 300);
     setTimeout(function() {
         settings.set('linkText2', '123')
-    }, 1000);
+    }, 100);
     setTimeout(function() {
         settings.set('linkText', '<i>im from model lol</i>');
-    }, 2000);
+    }, 200);
+    setTimeout(function() {
+        anotherModel.set('a', null);
+    }, 350);
+    setTimeout(function() {
+        anotherModel.set('a', 'anotherModel');
+    }, 400);
 
     var models = {
         settings: window.settings,

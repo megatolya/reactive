@@ -67,7 +67,7 @@ utils.extend(Block.prototype, {
                 var html = this.toHTML();
 
                 if (!this.parent) {
-                    adapter(adapter().root).append(html);
+                    adapter(adapter().root).prepend(html);
                 } else {
                     this.parent.getDomElement().prepend(html);
                 }

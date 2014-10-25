@@ -52,7 +52,7 @@ function Primitive(bemjson, parent) {
     }, this);
 
     // TODO
-    this._previousModelChanged = {};
+    this._previousModelChanged = null;
 
     var showIf = bemjson.showIf;
 
