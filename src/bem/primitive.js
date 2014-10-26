@@ -4,7 +4,7 @@ var utils = require('../utils');
 var i = 0;
 
 function uniq() {
-    return 'uniq' + (i++);
+    return 'block-' + (i++);
 }
 
 function Primitive(bemjson, parent) {
@@ -33,13 +33,15 @@ function Primitive(bemjson, parent) {
     this._attrs = utils.extend({}, bemjson.attrs || {});
     this._attrs['data-blox'] = this._id;
 
-    this._models = require('../vars').models;
+    this._globalModels = require('../vars').models;
+    this._models = {};
+    utils.extend(this._models, this._globalModels);
 
     if (bemjson.iterate) {
         this._iterable = true;
         var iteratingBind = bemjson.iterate.split(' ')[0].trim();
         this._iteratingBind = iteratingBind;
-        this.iterableScope[iteratingBind] = this._models[bemjson.iterate.split(' ')[2].trim()];
+        this.iterableScope[iteratingBind] = this._globalModels[bemjson.iterate.split(' ')[2].trim()];
     }
 
     this._bindings = this._extractBindings(bemjson.bind);
@@ -66,7 +68,7 @@ function Primitive(bemjson, parent) {
 
     this.isShown = typeof showIf === 'function'
         ? function() {
-            return this.wasShown = Boolean(showIf.apply(null, _this._getModelsByBindings()));
+            return this.wasShown = Boolean(showIf.apply(null, _this._getModels()));
         }
         : function() {
             return this.wasShown = true;
@@ -149,10 +151,8 @@ Primitive.prototype = {
         return this._attrs;
     },
 
-    // TODO rename getModels?
-    _getModelsByBindings: function() {
+    _getModels: function() {
         return this._bindings.map(function(binding) {
-            // TODO
             return this._models[binding];
         }, this);
     },
