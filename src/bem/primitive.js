@@ -53,9 +53,11 @@ function Primitive(bemjson, parent) {
             }
         }
 
-        model.on('change', this._onModelChanged, this);
-        model.on('remove', this._onModelChanged, this);
-        model.on('add', this._onModelChanged, this);
+        ['change', 'remove', 'add'].forEach(function(eventName) {
+            model.on(eventName, function(model) {
+                this._onModelChanged(eventName, model);
+            }, this);
+        }, this);
     }, this);
 
     this._previousModelChanged = null;
@@ -116,12 +118,12 @@ Primitive.prototype = {
         return this._content.apply(null, this._bindings);
     },
 
-    _onModelChanged: function(event) {
-        if (utils.isSameObjects(this._previousModelChanged, event.changed)) {
+    _onModelChanged: function(eventName, model) {
+        if (eventName === 'change' && utils.isSameObjects(this._previousModelChanged, model.changed)) {
             return;
         }
 
-        this._previousModelChanged = event.changed;
+        this._previousModelChanged = model.changed;
         this.repaint();
     },
 

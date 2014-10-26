@@ -7,8 +7,18 @@ function NativeAdapter(query) {
     }
 
     if (query) {
-        this._query = query;
-        this[0] = document.querySelector(this._query);
+        if (typeof query === 'string') {
+            utils.extend(this, document.querySelectorAll(query));
+            return;
+        } else if (query instanceof NodeList) {
+            utils.extend(this, query);
+            return;
+        } else if (query instanceof Element) {
+            utils.extend(this, [query]);
+            return;
+        }
+
+        throw new TypeError('Unknown query ' + query);
     }
 }
 
@@ -17,12 +27,23 @@ utils.extend(NativeAdapter.prototype, {
     constructor: NativeAdapter,
 
     remove: function() {
-        this[0].parentElement.removeChild(element);
+        for (var i = 0; i < this.length; i++) {
+            this[i].parentElement.removeChild(this[i]);
+            delete this[i];
+        }
     },
 
     replaceWith: function(html) {
-        // TODO
-        $(this[0]).replaceWith(html);
+        var previousSibling = this[0].previousSibling;
+
+        if (previousSibling) {
+            this.remove();
+            previousSibling.after(html);
+        } else {
+            var parent = this[0].parentElement;
+            this.remove();
+            new NativeAdapter(parent).append(html);
+        }
     },
 
     append: function(html) {
@@ -34,7 +55,7 @@ utils.extend(NativeAdapter.prototype, {
     },
 
     after: function(html) {
-        this[0].outerHTML += html;
+        this[this.length - 1].outerHTML += html;
     },
 
     before: function(html) {
