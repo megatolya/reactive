@@ -9,24 +9,9 @@
     bh.match('container', function(ctx) {
         ctx.tag('div');
     });
-    bh.match('container_type_list', function(ctx) {
-        ctx.tag('ul');
-    });
-    bh.match('list-item', function(ctx) {
-        ctx.tag('li');
-    });
-
 
     var Settings = Backbone.Model.extend();
     var AnotherModel = Backbone.Model.extend();
-    var Bookmark = Backbone.Model.extend({
-        initialize: function(url) {
-            this.set('url', url);
-        }
-    });
-    var BookmarksList=  Backbone.Collection.extend({
-        model: Bookmark
-    });
 
     var bemjson = function() {
         return [
@@ -100,16 +85,8 @@
             },
             {
                 block: 'container',
-                mods: {
-                    type: 'list'
-                },
-                content: {
-                    iterate: 'item in bookmarksList',
-                    bind: 'item',
-                    block: 'list-item',
-                    content: function(item) {
-                        return item.get('url');
-                    }
+                content: function(model) {
+                    return '123123';
                 }
             }
         ];
@@ -117,8 +94,6 @@
 
     window.settings = new Settings();
     window.anotherModel = new AnotherModel();
-    window.Bookmark = Bookmark;
-    window.bookmarksList = new BookmarksList([new Bookmark('http://one.ru'), new Bookmark('http://two.ru'), new Bookmark('http://three.ru')]);
 
     anotherModel.set('a', 'asd');
     settings.set('linkText', 'asd2');
@@ -128,8 +103,7 @@
             bemjson: bemjson(),
             models: {
                 settings: settings,
-                anotherModel: anotherModel,
-                bookmarksList: bookmarksList
+                anotherModel: anotherModel
             },
             adapter: blox.adapters.native,
             templateEngine: bh
