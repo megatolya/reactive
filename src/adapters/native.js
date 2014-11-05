@@ -15,6 +15,7 @@ function NativeAdapter(query) {
             return;
         } else if (query instanceof Element) {
             utils.extend(this, [query]);
+            this.length = 1;
             return;
         }
 
@@ -64,7 +65,21 @@ utils.extend(NativeAdapter.prototype, {
 
     html: function(html) {
         this[0].innerHTML = html;
+    },
+
+    attr: function(name, val) {
+        for (var i = 0; i < this.length; i++) {
+            if (val) {
+                this[i].setAttribute(name, val);
+            } else {
+                return this[i].getAttribute(name);
+            }
+        }
     }
 });
+
+NativeAdapter.bindToDoc = function(event, handler) {
+    document.addEventListener(event, handler, false);
+};
 
 module.exports = NativeAdapter;

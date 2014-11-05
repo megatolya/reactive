@@ -2,9 +2,11 @@ var FixmeError = require('../errors').FixmeError;
 var utils = require('../utils');
 
 var i = 0;
+var ATTRIBUTE = 'blox';
+var DATA_ATTRIBUTE = 'data-' + ATTRIBUTE;
 
 function uniq() {
-    return 'block-' + (i++);
+    return 'uniq-' + (i++);
 }
 
 function Primitive(bemjson, parent) {
@@ -19,6 +21,8 @@ function Primitive(bemjson, parent) {
 
     if (!Primitive.isPrimitive(bemjson)) {
         this._params = this._extractParams(bemjson);
+        this._events = this._getEventListeners();
+
         this._mods = utils.extend({}, bemjson.mods || {});
 
         this._content = this._extractContent(bemjson.content);
@@ -31,7 +35,7 @@ function Primitive(bemjson, parent) {
     }
 
     this._attrs = utils.extend({}, bemjson.attrs || {});
-    this._attrs['data-blox'] = this._id;
+    this._attrs[DATA_ATTRIBUTE] = this._id;
 
     this._globalModels = require('../vars').models;
     this._models = {};
@@ -51,7 +55,9 @@ function Primitive(bemjson, parent) {
         if (!model) {
             model = this.iterableScope[binding];
             if (!model) {
-                throw new Error('No such model was supplied: ' + binding);
+                // TODO bind in block inside iterable
+                // throw new Error('No such model was supplied: ' + binding);
+                return;
             }
         }
 
@@ -73,6 +79,10 @@ function Primitive(bemjson, parent) {
         : function() {
             return this.wasShown = true;
         };
+
+    if (!Primitive.isPrimitive(bemjson)) {
+        Primitive.registerListeners(this, this._events);
+    }
 }
 
 /**
@@ -111,6 +121,54 @@ Primitive.isPrimitive = function(bemjson) {
     } else {
         return true;
     }
+};
+
+function getBlockFromEvent(event) {
+    var adapter = require('../vars').adapter;
+    var element = adapter(event.target);
+    //var attr = element.dataset[ATTRIBUTE];
+    var attr = element.attr(DATA_ATTRIBUTE);
+
+    // TODO доделать
+    if (attr) {
+        return require('../vars').allElements.filter(function(block) {
+            if (block._id === attr) {
+                return true;
+            }
+
+            return false;
+        })[0];
+    }
+}
+
+Primitive.registerListeners = function(block, events) {
+    var registered = this._registered = this._registered || {};
+    var adapter = require('../vars').adapter;
+
+    Object.keys(events).forEach(function(eventName) {
+        if (!registered[eventName]) {
+            adapter.bindToDoc(eventName, function(e) {
+                var triggeredBlock = getBlockFromEvent(e);
+
+                registered[eventName].some(function(block) {
+                    if (block === triggeredBlock) {
+                        block.handleEvent(e);
+                        return true;
+                    }
+
+                    while (triggeredBlock = triggeredBlock.parent) {
+                        if (block === triggeredBlock) {
+                            block.handleEvent(e);
+                            return true;
+                        }
+                    }
+                });
+            });
+            registered[eventName] = [block];
+        } else {
+            registered[eventName].push(block);
+        }
+    });
 };
 
 Primitive.prototype = {
@@ -173,7 +231,8 @@ Primitive.prototype = {
             'elem',
             'mods',
             'content',
-            'attrs'
+            'attrs',
+            'bind'
         ];
 
         var result = {};
@@ -203,6 +262,19 @@ Primitive.prototype = {
             : null;
     },
 
+    _getEventListeners: function() {
+        var eventToHandler = {};
+        var reg = /^on[A-Z]+/;
+
+        Object.keys(this._params).forEach(function(param) {
+            if (reg.test(param)) {
+                eventToHandler[param.replace(/^on/, '').toLowerCase()] = this._params[param];
+            }
+        }, this);
+
+        return eventToHandler;
+    },
+
     _extractChildren: function(bemjson) {
         var parent = this;
         var bem = require('./');
@@ -218,10 +290,17 @@ Primitive.prototype = {
         throw new TypeError('Uknown type of bemjson: ' + bemjson);
     },
 
+    handleEvent: function(e) {
+        console.log(e);
+        var models = Array.prototype.slice.call(this._getModels());
+        models.unshift(e);
+        this._params['on' + e.type.charAt(0).toUpperCase() + e.type.slice(1, e.length)].apply(null, models);
+    },
+
     getDomElement: function() {
         var adapter = require('../vars').adapter;
 
-        return adapter('[data-blox=%id]'.replace('%id', this._id));
+        return adapter('[' + DATA_ATTRIBUTE + '=%id]'.replace('%id', this._id));
     }
 };
 

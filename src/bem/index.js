@@ -12,6 +12,10 @@ module.exports = {
             return new Block(bemjson, parent);
         }
 
+        if (Element.isElement(bemjson)) {
+            return new Element(bemjson, parent);
+        }
+
         throw new TypeError('Uknown type of bemjson: ' + typeof bemjson);
     }
 };
