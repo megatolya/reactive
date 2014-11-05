@@ -3,17 +3,19 @@ var utils = require('../utils');
 
 var i = 0;
 var ATTRIBUTE = 'bj';
-var DATA_ATTRIBUTE = 'data-' + ATTRIBUTE;
+var ID_ATTRIBUTE = 'data-' + ATTRIBUTE;
+// TODO удалить в пользу хеша id блока -> название ключа итерации
+var DATA_ATTRIBUTE = 'data-' + ATTRIBUTE + 'x';
 
 function uniq() {
-    return 'uniq-' + (i++);
+    return 'uniqid-' + (i++);
 }
 
 function Primitive(bemjson, parent) {
     this.parent = parent;
     var _this = this;
 
-    this.iterableScope = this._createScope(parent);
+    this.scope = this._createScope(parent);
     window.allElements = this._allElements = require('../vars').allElements;
     this._allElements.push(this);
 
@@ -35,29 +37,25 @@ function Primitive(bemjson, parent) {
     }
 
     this._attrs = utils.extend({}, bemjson.attrs || {});
-    this._attrs[DATA_ATTRIBUTE] = this._id;
-
-    this._globalModels = require('../vars').models;
-    this._models = {};
-    utils.extend(this._models, this._globalModels);
 
     if (bemjson.iterate) {
         this._iterable = true;
         var iteratingBind = bemjson.iterate.split(' ')[0].trim();
-        this._iteratingBind = iteratingBind;
-        this.iterableScope[iteratingBind] = this._globalModels[bemjson.iterate.split(' ')[2].trim()];
+        this._iteratingBindingName = iteratingBind;
+        this._collectionName = bemjson.iterate.split(' ')[2].trim();
+        this._collection = this.scope[this._collectionName];
     }
 
     this._bindings = this._extractBindings(bemjson.bind);
     this._bindings.forEach(function(binding) {
-        var model = this._models[binding];
+        var model = this.scope[binding];
 
         if (!model) {
-            model = this.iterableScope[binding];
+            model = this._collection;
+
             if (!model) {
-                // TODO bind in block inside iterable
-                // throw new Error('No such model was supplied: ' + binding);
                 return;
+                //throw new Error('No such model was supplied: ' + binding);
             }
         }
 
@@ -73,8 +71,8 @@ function Primitive(bemjson, parent) {
     var showIf = bemjson.showIf;
 
     this.isShown = typeof showIf === 'function'
-        ? function() {
-            return Boolean(showIf.apply(null, _this._getModels()));
+        ? function(models) {
+            return Boolean(showIf.apply(null, models || _this._getModels()));
         }
         : function() {
             return true;
@@ -123,11 +121,11 @@ Primitive.isPrimitive = function(bemjson) {
     }
 };
 
-function getBlockFromEvent(event) {
+function getBlockFromElement(element) {
     var adapter = require('../vars').adapter;
-    var element = adapter(event.target);
+    var element = adapter(element);
     //var attr = element.dataset[ATTRIBUTE];
-    var attr = element.attr(DATA_ATTRIBUTE);
+    var attr = element.attr(ID_ATTRIBUTE);
     var res = null;
 
     if (attr) {
@@ -142,6 +140,10 @@ function getBlockFromEvent(event) {
     }
 
     return res;
+}
+
+function getBlockFromEvent(event) {
+    return getBlockFromElement(event.target);
 }
 
 Primitive.registerListeners = function(block, events) {
@@ -189,28 +191,28 @@ Primitive.prototype = {
     constructor: Primitive,
 
     isWasShown: function() {
-        return Boolean(this.getDomElement().length);
-    },
-
-    toBemjson: function() {
-        return this._content.apply(null, this._bindings);
+        var domElem = this.getDomElement();
+        return Boolean(domElem.length);
     },
 
     // TODO вызывается лишний раз в итерируемых блоках
     _onModelChanged: function(eventName, model) {
-        if (eventName === 'change' && utils.isSameObjects(this._previousModelChanged, model.changed)) {
-            return;
-        }
+        // TODO changed как раз содержит то, что изменилось.
+        //if (eventName === 'change' && utils.isSameObjects(this._previousModelChanged, model.changed)) {
+            //return;
+        //}
 
         this._previousModelChanged = model.changed;
         this.repaint();
     },
 
     _createScope: function(parent) {
-        var parentScope = {};
+        var parentScope;
 
         if (parent) {
-            parentScope = parent.iterableScope;
+            parentScope = parent.scope;
+        } else {
+            parentScope = require('../vars').models;
         }
 
         return Object.create(parentScope);
@@ -225,12 +227,23 @@ Primitive.prototype = {
     },
 
     _getAttrs: function() {
+        this._attrs[ID_ATTRIBUTE] = this._id;
+        //Object.keys(this._indexes).forEach(function(index) {
+            //this._attrs[ID_ATTRIBUTE] += ' ' + index + '-' + this._indexes[index].index;
+        //}, this);
         return this._attrs;
     },
 
+    // TODO exception
     _getModels: function() {
         return this._bindings.map(function(binding) {
-            return this._models[binding];
+            var scope = this.scope;
+
+            if (scope[binding]) {
+                return scope[binding];
+            }
+
+            throw new Error('No such model ' + binding);
         }, this);
     },
 
@@ -310,6 +323,26 @@ Primitive.prototype = {
     },
 
     handleEvent: function(e) {
+        function prepareIterableScope(elem) {
+            var adapter = require('../vars').adapter;
+            var adaptedElement = adapter(elem)
+            var json = adaptedElement.attr(DATA_ATTRIBUTE);
+
+            if (json) {
+                var block = getBlockFromElement(elem);
+                var data = JSON.parse(json);
+                block.scope[data.name] = block._collection.models[data.index];
+            }
+        }
+
+        // сопоставляем scope и элемент
+        prepareIterableScope(e.target);
+
+        var parent = e.target;
+        while (parent = parent.parentElement) {
+            prepareIterableScope(parent);
+        }
+
         var models = Array.prototype.slice.call(this._getModels());
         models.unshift(e);
         this._params['on' + e.type.charAt(0).toUpperCase() + e.type.slice(1, e.length)].apply(null, models);
@@ -318,7 +351,132 @@ Primitive.prototype = {
     getDomElement: function() {
         var adapter = require('../vars').adapter;
 
-        return adapter('[' + DATA_ATTRIBUTE + '=%id]'.replace('%id', this._id));
+        return adapter('[' + ID_ATTRIBUTE + '=%id]'.replace('%id', this._id));
+    },
+
+    _getMods: function() {
+        return this._mods;
+    },
+
+    prepareScope: function(index) {
+    },
+
+    toBemjson: function() {
+        this._loops = (this.parent || {})._loops ? this.parent._loops.slice() : [];
+
+        if (this._iterable) {
+            this._loops.push(this._iteratingBindingName);
+            var blocks = this._collection.models.map(function(model, index) {
+                this.scope[this._iteratingBindingName] = model;
+
+                var models = this._getModels();
+                var loopAttrs = {};
+                loopAttrs[DATA_ATTRIBUTE] = JSON.stringify({
+                    name: this._iteratingBindingName,
+                    index: index
+                });
+
+                if (!this.isShown(models))
+                    return null;
+
+                return {
+                    block: this._name,
+                    mods: this._getMods(),
+                    content: this._content ? this._content.apply(null, models) : (this._children || []).map(function(child) {
+                        return child.toBemjson();
+                    }, this),
+                    attrs: $.extend(loopAttrs, this._getAttrs())
+                };
+            }, this);
+        } else {
+            if (!this.isShown()) {
+                return null;
+            }
+
+            var block = {
+                block: this._name,
+                mods: this._getMods(),
+                // getchildrenorcontent
+                content: this._getContent(),
+                attrs: this._getAttrs()
+            };
+
+            for (var key in this._params) {
+                block[key] = this._params[key];
+            }
+        }
+
+        return blocks || block;
+    },
+
+    _getContent: function() {
+        if (this._content) {
+            var models = this._getModels();
+            return this._content.apply(null, models);
+        } else {
+            if (this._children) {
+                return this._children.map(function(child) {
+                    return child.toBemjson();
+                }, this);
+            }
+        }
+    },
+
+    // TODO если перерисовали родителя, не нужно перерисовывать детей
+    repaint: function() {
+        var adapter = require('../vars').adapter;
+
+        if (this.parent && !this.parent.isWasShown()) {
+            return;
+        }
+
+        if (this._params.repaint === false) {
+            return;
+        }
+
+        if (this.isWasShown()) {
+            var domNode = this.getDomElement();
+
+            domNode.replaceWith(this.toHTML());
+        } else {
+            // ставим блок после предыдущего блока
+            var prev = this.getPreviousSibling();
+
+            // TODO while?
+
+            if (!prev) {
+                var html = this.toHTML();
+
+                if (!this.parent) {
+                    adapter(adapter().root).prepend(html);
+                } else {
+                    this.parent.getDomElement().prepend(html);
+                }
+                return;
+            }
+
+            var prevElement = null;
+            if (!prev.isWasShown()) {
+                while (prev = prev.getPreviousSibling()) {
+                    if (prev.isWasShown()) {
+                        prevElement = prev.getDomElement();
+                    }
+                }
+            } else {
+                prevElement = prev.getDomElement();
+            }
+
+            if (prevElement) {
+                prevElement.after(this.toHTML());
+            } else {
+                this.parent.getDomElement().prepend(html);
+            }
+        }
+    },
+
+    toHTML: function() {
+        var templateEngine = require('../vars').templateEngine;
+        return templateEngine.apply(this.toBemjson());
     }
 };
 

@@ -68,6 +68,10 @@ var bemjson = function() {
             content: 'Добавить',
             onClick: function() {
                 search.get('query') && tasks.add(new Task(search.get('query')));
+                /*
+                    document.querySelector('.search').value = '';
+                    search.set('query', '');
+                */
             }
         }]
     }, {
