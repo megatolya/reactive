@@ -74,10 +74,10 @@ function Primitive(bemjson, parent) {
 
     this.isShown = typeof showIf === 'function'
         ? function() {
-            return this.wasShown = Boolean(showIf.apply(null, _this._getModels()));
+            return Boolean(showIf.apply(null, _this._getModels()));
         }
         : function() {
-            return this.wasShown = true;
+            return true;
         };
 
     if (!Primitive.isPrimitive(bemjson)) {
@@ -128,17 +128,20 @@ function getBlockFromEvent(event) {
     var element = adapter(event.target);
     //var attr = element.dataset[ATTRIBUTE];
     var attr = element.attr(DATA_ATTRIBUTE);
+    var res = null;
 
-    // TODO доделать
     if (attr) {
-        return require('../vars').allElements.filter(function(block) {
+        require('../vars').allElements.some(function(block) {
             if (block._id === attr) {
+                res = block;
                 return true;
             }
 
             return false;
-        })[0];
+        });
     }
+
+    return res;
 }
 
 Primitive.registerListeners = function(block, events) {
@@ -148,12 +151,21 @@ Primitive.registerListeners = function(block, events) {
     Object.keys(events).forEach(function(eventName) {
         if (!registered[eventName]) {
             adapter.bindToDoc(eventName, function(e) {
-                var triggeredBlock = getBlockFromEvent(e);
+                var originalTriggeredBlock = getBlockFromEvent(e);
+
+                if (!originalTriggeredBlock)
+                    return;
 
                 registered[eventName].some(function(block) {
+                    var triggeredBlock = originalTriggeredBlock;
+
                     if (block === triggeredBlock) {
                         block.handleEvent(e);
                         return true;
+                    }
+
+                    if (!triggeredBlock.parent) {
+                        return false;
                     }
 
                     while (triggeredBlock = triggeredBlock.parent) {
@@ -162,6 +174,8 @@ Primitive.registerListeners = function(block, events) {
                             return true;
                         }
                     }
+
+                    return false;
                 });
             });
             registered[eventName] = [block];
@@ -174,10 +188,15 @@ Primitive.registerListeners = function(block, events) {
 Primitive.prototype = {
     constructor: Primitive,
 
+    isWasShown: function() {
+        return Boolean(this.getDomElement().length);
+    },
+
     toBemjson: function() {
         return this._content.apply(null, this._bindings);
     },
 
+    // TODO вызывается лишний раз в итерируемых блоках
     _onModelChanged: function(eventName, model) {
         if (eventName === 'change' && utils.isSameObjects(this._previousModelChanged, model.changed)) {
             return;
@@ -291,7 +310,6 @@ Primitive.prototype = {
     },
 
     handleEvent: function(e) {
-        console.log(e);
         var models = Array.prototype.slice.call(this._getModels());
         models.unshift(e);
         this._params['on' + e.type.charAt(0).toUpperCase() + e.type.slice(1, e.length)].apply(null, models);

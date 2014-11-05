@@ -76,7 +76,7 @@ utils.extend(Block.prototype, {
     repaint: function() {
         var adapter = require('../vars').adapter;
 
-        if (this.parent && !this.parent.isShown()) {
+        if (this.parent && !this.parent.isWasShown()) {
             return;
         }
 
@@ -84,15 +84,17 @@ utils.extend(Block.prototype, {
             return;
         }
 
-        if (this.wasShown) {
+        if (this.isWasShown()) {
             var domNode = this.getDomElement();
 
             domNode.replaceWith(this.toHTML());
         } else {
+            // ставим блок после предыдущего блока
             var prev = this.getPreviousSibling();
 
             // TODO while?
-            if (!prev || !prev.wasShown) {
+
+            if (!prev) {
                 var html = this.toHTML();
 
                 if (!this.parent) {
@@ -100,8 +102,24 @@ utils.extend(Block.prototype, {
                 } else {
                     this.parent.getDomElement().prepend(html);
                 }
+                return;
+            }
+
+            var prevElement = null;
+            if (!prev.isWasShown()) {
+                while (prev = prev.getPreviousSibling()) {
+                    if (prev.isWasShown()) {
+                        prevElement = prev.getDomElement();
+                    }
+                }
             } else {
-                this.getPreviousSibling().getDomElement().after(this.toHTML());
+                prevElement = prev.getDomElement();
+            }
+
+            if (prevElement) {
+                prevElement.after(this.toHTML());
+            } else {
+                this.parent.getDomElement().prepend(html);
             }
         }
     },

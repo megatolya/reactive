@@ -60,8 +60,8 @@ var bemjson = function() {
         block: 'head-search',
         content: [{
             block: 'search',
-            onKeydown: function(event) {
-                search.set('query', bj.adapters.native('.search')[0].value);
+            onKeyup: function(event) {
+                search.set('query', event.target.value);
             }
         }, {
             block: 'button',
@@ -76,7 +76,7 @@ var bemjson = function() {
             block: 'todo-item',
             bind: ['task', 'search'],
             showIf: function(task, search) {
-                return new RegExp(search.get('query')).test(task.get('name')) || !search.get('query');
+                return new RegExp(search.get('query')).test(task.get('name'));
             },
             iterate: 'task in tasks',
             content: [{
@@ -110,5 +110,4 @@ $(function() {
         adapter: bj.adapters.native,
         templateEngine: bh
     });
-    console.timeEnd('123');
 });
