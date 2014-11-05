@@ -2,7 +2,7 @@ var FixmeError = require('../errors').FixmeError;
 var utils = require('../utils');
 
 var i = 0;
-var ATTRIBUTE = 'blox';
+var ATTRIBUTE = 'bj';
 var DATA_ATTRIBUTE = 'data-' + ATTRIBUTE;
 
 function uniq() {

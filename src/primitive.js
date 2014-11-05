@@ -27,7 +27,7 @@ function Primitive(bemjson, parent) {
     }
 
     this._attrs = utils.extend({}, bemjson.attrs || {});
-    this._attrs['data-blox'] = this._id;
+    this._attrs['data-bj'] = this._id;
 
     this._bindings = this._extractBindings(bemjson.bind);
     this._bindings.forEach(function(binding) {
@@ -187,7 +187,7 @@ Primitive.prototype = {
     },
 
     getDomElement: function() {
-        return adapter('[data-blox=%id]'.replace('%id', this._id));
+        return adapter('[data-bj=%id]'.replace('%id', this._id));
     }
 };
 

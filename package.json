@@ -1,11 +1,11 @@
 {
   "author": "Anatoliy Ostrovskiy <megatolya@yandex-team.ru>",
   "description": "BEM MVC framework for web apps.",
-  "name": "blox",
+  "name": "bj",
   "version": "1.0.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/megatolya/blox"
+    "url": "https://github.com/megatolya/bj"
   },
   "licence": "MIT",
   "contributors": [
@@ -37,10 +37,10 @@
     "check-style": "./node_modules/jscs/bin/jscs ."
   },
   "bugs": {
-    "url": "https://github.com/megatolya/blox/issues"
+    "url": "https://github.com/megatolya/bj/issues"
   },
-  "homepage": "https://github.com/megatolya/blox",
-  "main": "blox.js",
+  "homepage": "https://github.com/megatolya/bj",
+  "main": "bj.js",
   "directories": {
     "example": "examples"
   },

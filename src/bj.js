@@ -2,7 +2,7 @@ var utils = require('./utils');
 
 module.exports =  {
     // TODO check params
-    init: function blox_init(params) {
+    init: function(params) {
         var globals = require('./vars');
 
         utils.extend(globals, params);

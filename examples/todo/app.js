@@ -61,7 +61,7 @@ var bemjson = function() {
         content: [{
             block: 'search',
             onKeydown: function(event) {
-                search.set('query', blox.adapters.native('.search')[0].value);
+                search.set('query', bj.adapters.native('.search')[0].value);
             }
         }, {
             block: 'button',
@@ -101,14 +101,13 @@ var bemjson = function() {
 };
 
 $(function() {
-    console.time('123');
-    blox.init({
+    bj.init({
         bemjson: bemjson(),
         models: {
             tasks: tasks,
             search: search
         },
-        adapter: blox.adapters.native,
+        adapter: bj.adapters.native,
         templateEngine: bh
     });
     console.timeEnd('123');

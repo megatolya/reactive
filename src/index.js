@@ -1,3 +1,3 @@
 (function() {
-    this.blox = require('./blox');
+    this.bj = require('./bj');
 })();

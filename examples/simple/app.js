@@ -99,13 +99,13 @@
     settings.set('linkText', 'asd2');
 
     $(function() {
-        blox.init({
+        bj.init({
             bemjson: bemjson(),
             models: {
                 settings: settings,
                 anotherModel: anotherModel
             },
-            adapter: blox.adapters.native,
+            adapter: bj.adapters.native,
             templateEngine: bh
         });
     });
