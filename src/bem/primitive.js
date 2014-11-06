@@ -197,11 +197,6 @@ Primitive.prototype = {
 
     // TODO вызывается лишний раз в итерируемых блоках
     _onModelChanged: function(eventName, model) {
-        // TODO changed как раз содержит то, что изменилось.
-        //if (eventName === 'change' && utils.isSameObjects(this._previousModelChanged, model.changed)) {
-            //return;
-        //}
-
         this._previousModelChanged = model.changed;
         this.repaint();
     },
@@ -234,7 +229,6 @@ Primitive.prototype = {
         return this._attrs;
     },
 
-    // TODO exception
     _getModels: function() {
         return this._bindings.map(function(binding) {
             var scope = this.scope;
@@ -279,7 +273,6 @@ Primitive.prototype = {
     },
 
     _extractContent: function(content) {
-        // TODO isPrimitive
         if (content === null
                 || content === undefined
                 || typeof content === 'string'
@@ -422,7 +415,6 @@ Primitive.prototype = {
         }
     },
 
-    // TODO если перерисовали родителя, не нужно перерисовывать детей
     repaint: function() {
         var adapter = require('../vars').adapter;
 
@@ -441,8 +433,6 @@ Primitive.prototype = {
         } else {
             // ставим блок после предыдущего блока
             var prev = this.getPreviousSibling();
-
-            // TODO while?
 
             if (!prev) {
                 var html = this.toHTML();
