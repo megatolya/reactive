@@ -36,6 +36,12 @@ body {
     border-bottom: 1px solid grey;
 }
 
+.todo-item_done_yes
+{
+    color: grey;
+    text-decoration: line-through;
+}
+
 .todo-item:last-child {
     border-bottom: none;
 }
@@ -55,6 +61,7 @@ body {
     border: 1px solid grey;
     border-radius: 5px;
 }
+
 
 .button:active {
     position: relative;

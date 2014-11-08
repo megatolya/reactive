@@ -6,6 +6,8 @@ var ATTRIBUTE = 'bj';
 var ID_ATTRIBUTE = 'data-' + ATTRIBUTE;
 // TODO удалить в пользу хеша id блока -> название ключа итерации
 var DATA_ATTRIBUTE = 'data-' + ATTRIBUTE + 'x';
+var Param = require('./param');
+var ChangeableParam = require('./changeable-param');
 
 function uniq() {
     return 'uniqid-' + (i++);
@@ -25,7 +27,7 @@ function Primitive(bemjson, parent) {
         this._params = this._extractParams(bemjson);
         this._events = this._getEventListeners();
 
-        this._mods = utils.extend({}, bemjson.mods || {});
+        this._mods = this._extractMods(bemjson.mods || {});
 
         this._content = this._extractContent(bemjson.content);
 
@@ -251,6 +253,16 @@ Primitive.prototype = {
         return null;
     },
 
+    _extractMods: function(mods) {
+        return Object.keys(mods).map(function(modName) {
+            if (typeof mods[modName] === 'function') {
+                return new ChangeableParam(modName, mods[modName]);
+            } else {
+                return new Param(modName, mods[modName]);
+            }
+        });
+    },
+
     _extractParams: function(bemjson) {
         var ignoreParams = [
             'block',
@@ -348,14 +360,22 @@ Primitive.prototype = {
     },
 
     _getMods: function() {
-        return this._mods;
-    },
+        var res = {};
 
-    prepareScope: function(index) {
+        this._mods.map(function(param) {
+            utils.extend(res, param.valueOf(this._getModels()));
+        }, this);
+        Object.keys(res).forEach(function(key) {
+            if (!res[key]) {
+                delete res[key];
+            }
+        });
+
+        return res;
     },
 
     toBemjson: function() {
-        this._loops = (this.parent || {})._loops ? this.parent._loops.slice() : [];
+        this._loops = this._loops || (this.parent || {})._loops ? this.parent._loops.slice() : [];
 
         if (this._iterable) {
             this._loops.push(this._iteratingBindingName);

@@ -22,8 +22,10 @@ bh.match('todo-item__text', function(ctx) {
 bh.match('checkbox', function(ctx) {
     ctx.tag('input');
     ctx.attr('type', 'checkbox');
+    var json = ctx.json();
+    // TODO bug in bh
     if (ctx.mod('checked')) {
-        ctx.attr('checked', 'yes');
+        json.attrs = $.extend({checked: 'checked'}, json.attrs);
     }
 });
 
@@ -82,22 +84,38 @@ var bemjson = function() {
             showIf: function(task, search) {
                 return new RegExp(search.get('query')).test(task.get('name'));
             },
+            mods: {
+                done: function(task, search) {
+                    return task.get('done') ? 'yes' : '';
+                }
+            },
             iterate: 'task in tasks',
             content: [{
                 block: 'todo-item-text',
                 //elem: 'text',
                 bind: ['task', 'search'],
+                mods: {
+                    theme: 'default'
+                },
                 content: function(task, search) {
-                    return task.get('name');
+                    var str = task.get('name');
+
+                    if (task.get('done')) {
+                        str += ' (done)';
+                    }
+
+                    return str;
                 }
             }, {
                 block: 'checkbox',
                 bind: 'task',
                 onClick: function(e, task) {
-                    task.set('name', 'Done');
+                    task.set('done', !task.get('done'));
                 },
                 mods: {
-                    //'checked': task.done ? 'yes' : ''
+                    checked: function(task, search) {
+                        return task.get('done') ? 'yes' : '';
+                    }
                 }
             }]
         }
