@@ -4,6 +4,7 @@ var utils = require('../utils');
 var i = 0;
 var ATTRIBUTE = 'bj';
 var ID_ATTRIBUTE = 'data-' + ATTRIBUTE;
+
 // TODO удалить в пользу хеша id блока -> название ключа итерации
 var DATA_ATTRIBUTE = 'data-' + ATTRIBUTE + 'x';
 var Param = require('./param');
@@ -14,6 +15,10 @@ function uniq() {
 }
 
 function Primitive(bemjson, parent) {
+    if (Primitive.isPrimitive(bemjson)) {
+        throw new FixmeError('Plain types in bemjson not implemented yet');
+    }
+
     this.parent = parent;
     var _this = this;
 
@@ -23,22 +28,18 @@ function Primitive(bemjson, parent) {
 
     this._id = uniq();
 
-    if (!Primitive.isPrimitive(bemjson)) {
-        this._params = this._extractParams(bemjson);
-        this._events = this._getEventListeners();
+    // не примитив
+    this._params = this._extractParams(bemjson);
+    this._events = this._getEventListeners();
 
-        this._mods = this._extractMods(bemjson.mods || {});
+    this._mods = this._extractComplexParams(bemjson.mods || {});
+    this._attrs = this._extractComplexParams(bemjson.attrs || {});
 
-        this._content = this._extractContent(bemjson.content);
+    this._content = this._extractContent(bemjson.content);
 
-        if (!this._content) {
-            this._children = this._extractChildren(bemjson.content);
-        }
-    } else {
-        throw new FixmeError('Plain types in bemjson not implemented yet');
+    if (!this._content) {
+        this._children = this._extractChildren(bemjson.content);
     }
-
-    this._attrs = utils.extend({}, bemjson.attrs || {});
 
     if (bemjson.iterate) {
         this._iterable = true;
@@ -126,8 +127,8 @@ Primitive.isPrimitive = function(bemjson) {
 function getBlockFromElement(element) {
     var adapter = require('../vars').adapter;
     var element = adapter(element);
-    //var attr = element.dataset[ATTRIBUTE];
     var attr = element.attr(ID_ATTRIBUTE);
+
     var res = null;
 
     if (attr) {
@@ -223,14 +224,6 @@ Primitive.prototype = {
         return bindings || [];
     },
 
-    _getAttrs: function() {
-        this._attrs[ID_ATTRIBUTE] = this._id;
-        //Object.keys(this._indexes).forEach(function(index) {
-            //this._attrs[ID_ATTRIBUTE] += ' ' + index + '-' + this._indexes[index].index;
-        //}, this);
-        return this._attrs;
-    },
-
     _getModels: function() {
         return this._bindings.map(function(binding) {
             var scope = this.scope;
@@ -253,7 +246,7 @@ Primitive.prototype = {
         return null;
     },
 
-    _extractMods: function(mods) {
+    _extractComplexParams: function(mods) {
         return Object.keys(mods).map(function(modName) {
             if (typeof mods[modName] === 'function') {
                 return new ChangeableParam(modName, mods[modName]);
@@ -357,12 +350,13 @@ Primitive.prototype = {
         var adapter = require('../vars').adapter;
 
         return adapter('[' + ID_ATTRIBUTE + '=%id]'.replace('%id', this._id));
+
     },
 
-    _getMods: function() {
+    _getComplexParams: function(paramsProp) {
         var res = {};
 
-        this._mods.map(function(param) {
+        this[paramsProp].map(function(param) {
             utils.extend(res, param.valueOf(this._getModels()));
         }, this);
         Object.keys(res).forEach(function(key) {
@@ -372,6 +366,16 @@ Primitive.prototype = {
         });
 
         return res;
+    },
+
+    _getMods: function() {
+        return this._getComplexParams('_mods');
+    },
+
+    _getAttrs: function() {
+        return utils.extend({
+            'data-bj': this._id
+        }, this._getComplexParams('_attrs'));
     },
 
     toBemjson: function() {
@@ -398,7 +402,7 @@ Primitive.prototype = {
                     content: this._content ? this._content.apply(null, models) : (this._children || []).map(function(child) {
                         return child.toBemjson();
                     }, this),
-                    attrs: $.extend(loopAttrs, this._getAttrs())
+                    attrs: utils.extend(loopAttrs, this._getAttrs())
                 };
             }, this);
         } else {

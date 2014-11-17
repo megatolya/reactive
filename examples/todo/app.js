@@ -33,9 +33,10 @@ bh.match('button', function(ctx) {
     ctx.tag('button');
 });
 
-var Search = Backbone.Model.extend({
+var App = Backbone.Model.extend({
     defaults: {
-        query: ''
+        query: '',
+        locked: false
     }
 });
 var Task = Backbone.Model.extend({
@@ -47,6 +48,7 @@ var Task = Backbone.Model.extend({
         done: false
     }
 });
+
 var Tasks = Backbone.Collection.extend();
 
 var tasks = new Tasks([
@@ -55,7 +57,7 @@ var tasks = new Tasks([
     new Task('Сделать все остальное'),
     new Task('Все переделать')
 ]);
-var search = new Search();
+var app = new App();
 
 var bemjson = function() {
     return [{
@@ -63,13 +65,13 @@ var bemjson = function() {
         content: [{
             block: 'search',
             onKeyup: function(event) {
-                search.set('query', event.target.value);
+                app.set('query', event.target.value);
             }
         }, {
             block: 'button',
             content: 'Добавить',
             onClick: function() {
-                search.get('query') && tasks.add(new Task(search.get('query')));
+                app.get('query') && tasks.add(new Task(app.get('query')));
                 /*
                     document.querySelector('.search').value = '';
                     search.set('query', '');
@@ -80,24 +82,23 @@ var bemjson = function() {
         block: 'todo-list',
         content: {
             block: 'todo-item',
-            bind: ['task', 'search'],
-            showIf: function(task, search) {
-                return new RegExp(search.get('query')).test(task.get('name'));
+            bind: ['task', 'app'],
+            showIf: function(task, app) {
+                return new RegExp(app.get('query')).test(task.get('name'));
             },
             mods: {
-                done: function(task, search) {
+                done: function(task, app) {
                     return task.get('done') ? 'yes' : '';
                 }
             },
             iterate: 'task in tasks',
             content: [{
                 block: 'todo-item-text',
-                //elem: 'text',
-                bind: ['task', 'search'],
+                bind: ['task', 'app'],
                 mods: {
                     theme: 'default'
                 },
-                content: function(task, search) {
+                content: function(task, app) {
                     var str = task.get('name');
 
                     if (task.get('done')) {
@@ -113,12 +114,32 @@ var bemjson = function() {
                     task.set('done', !task.get('done'));
                 },
                 mods: {
-                    checked: function(task, search) {
+                    checked: function(task, app) {
                         return task.get('done') ? 'yes' : '';
+                    }
+                },
+                attrs: {
+                    disabled: function(task) {
+                        return app.get('locked') ? 'disabled' : '';
                     }
                 }
             }]
         }
+    }, {
+        block: 'lock',
+        content: [
+            {
+                block: 'text',
+                tag: 'span',
+                content: 'Заблокировать чекбоксы'
+            },
+            {
+                block: 'checkbox',
+                onClick: function(e) {
+                    app.set('locked', !app.get('locked'));
+                }
+            }
+        ]
     }];
 };
 
@@ -127,7 +148,7 @@ $(function() {
         bemjson: bemjson(),
         models: {
             tasks: tasks,
-            search: search
+            app: app
         },
         adapter: bj.adapters.native,
         templateEngine: bh
