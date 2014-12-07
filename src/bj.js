@@ -14,6 +14,7 @@ module.exports =  {
             return elem.toBemjson();
         }));
         globals.adapter('body').html(html);
+        globals.adapter.init();
     },
 
     processBemJson: function(bemjson) {

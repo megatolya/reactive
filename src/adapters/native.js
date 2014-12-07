@@ -81,5 +81,6 @@ utils.extend(NativeAdapter.prototype, {
 NativeAdapter.bindToDoc = function(event, handler) {
     document.addEventListener(event, handler, false);
 };
+NativeAdapter.init = function() {};
 
 module.exports = NativeAdapter;

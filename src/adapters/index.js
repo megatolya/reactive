@@ -1,3 +1,4 @@
 module.exports = {
-    native: require('./native')
+    native: require('./native'),
+    'i-bem': require('./i-bem')
 };

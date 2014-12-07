@@ -1,3 +1,4 @@
 module.exports = {
-    allElements: []
+    allElements: [],
+    models: {}
 };

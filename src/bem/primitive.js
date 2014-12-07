@@ -126,8 +126,8 @@ Primitive.isPrimitive = function(bemjson) {
 
 function getBlockFromElement(element) {
     var adapter = require('../vars').adapter;
-    var element = adapter(element);
-    var attr = element.attr(ID_ATTRIBUTE);
+    var $element = adapter(element);
+    var attr = $element.attr(ID_ATTRIBUTE);
 
     var res = null;
 
@@ -140,6 +140,23 @@ function getBlockFromElement(element) {
 
             return false;
         });
+    }
+
+    var parent;
+    while (parent = element.parentNode) {
+        attr = $(parent).attr(ID_ATTRIBUTE);
+
+        if (attr) {
+            require('../vars').allElements.some(function(block) {
+                if (block._id === attr) {
+                    res = block;
+                    return true;
+                }
+
+                return false;
+            });
+            break;
+        }
     }
 
     return res;
@@ -195,6 +212,7 @@ Primitive.prototype = {
 
     isWasShown: function() {
         var domElem = this.getDomElement();
+        console.log(domElem);
         return Boolean(domElem.length);
     },
 
@@ -379,7 +397,7 @@ Primitive.prototype = {
     },
 
     toBemjson: function() {
-        this._loops = this._loops || (this.parent || {})._loops ? this.parent._loops.slice() : [];
+        this._loops = this._loops || ((this.parent || {})._loops ? this.parent._loops.slice() : []);
 
         if (this._iterable) {
             this._loops.push(this._iteratingBindingName);
@@ -483,7 +501,12 @@ Primitive.prototype = {
             if (prevElement) {
                 prevElement.after(this.toHTML());
             } else {
-                this.parent.getDomElement().prepend(html);
+                if (this.parent) {
+                    this.parent.getDomElement().prepend(html);
+                } else {
+                    var html = this.toHTML();
+                    adapter(adapter().root).prepend(html);
+                }
             }
         }
     },

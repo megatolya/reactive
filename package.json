@@ -11,7 +11,10 @@
   "contributors": [
     "Anatoliy Ostrovskiy <megatolya@yandex-team.ru>"
   ],
-  "dependencies": {},
+  "dependencies": {
+    "gulp-bem": "^1.0.1",
+    "gulp-concat": "^2.4.2"
+  },
   "devDependencies": {
     "backbone": "^1.1.2",
     "bh": "^3.1.4",
