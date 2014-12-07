@@ -142,6 +142,10 @@ function getBlockFromElement(element) {
         });
     }
 
+    if (res) {
+        return res;
+    }
+
     var parent;
     while (parent = element.parentNode) {
         attr = $(parent).attr(ID_ATTRIBUTE);
@@ -212,7 +216,6 @@ Primitive.prototype = {
 
     isWasShown: function() {
         var domElem = this.getDomElement();
-        console.log(domElem);
         return Boolean(domElem.length);
     },
 
@@ -278,6 +281,7 @@ Primitive.prototype = {
         var ignoreParams = [
             'block',
             'elem',
+            'elemMods',
             'mods',
             'content',
             'attrs',
@@ -414,27 +418,27 @@ Primitive.prototype = {
                 if (!this.isShown(models))
                     return null;
 
-                return {
+                return this._formatData({
                     block: this._name,
                     mods: this._getMods(),
                     content: this._content ? this._content.apply(null, models) : (this._children || []).map(function(child) {
                         return child.toBemjson();
                     }, this),
                     attrs: utils.extend(loopAttrs, this._getAttrs())
-                };
+                });
             }, this);
         } else {
             if (!this.isShown()) {
                 return null;
             }
 
-            var block = {
+            var block = this._formatData({
                 block: this._name,
                 mods: this._getMods(),
                 // getchildrenorcontent
                 content: this._getContent(),
                 attrs: this._getAttrs()
-            };
+            });
 
             for (var key in this._params) {
                 block[key] = this._params[key];

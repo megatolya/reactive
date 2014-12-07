@@ -9,7 +9,11 @@ function Block(bemjson, parent) {
 Block.prototype = Object.create(Primitive.prototype);
 
 utils.extend(Block.prototype, {
-    constructor: Block
+    constructor: Block,
+
+    _formatData: function(data) {
+        return data;
+    }
 });
 
 Block.isBlock = function(bemjson) {
