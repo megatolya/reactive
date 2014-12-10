@@ -117,7 +117,7 @@ $(function() {
             }, {
                 block: 'button',
                 content: 'оформить заказ',
-                bind: 'cart',
+                bind: ['cart', 'app'],
                 mods: {
                     disabled: function() {
                         return (cartIsNotEmpty() && app.get('accepted')) ? '' : 'yes';
