@@ -33,9 +33,10 @@ gulp.task('examples',
     })
 );
 
-gulp.task('gh-pages', ['examples'], function() {
+
+gulp.task('gh-pages', function() {
     var deploy = require('gulp-gh-pages');
 
-    return gulp.src('./examples/**/**')
+    return gulp.src(['./examples/**/**', 'dist/**', './docs/**/**'])
         .pipe(deploy());
 });

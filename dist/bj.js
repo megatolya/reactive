@@ -145,7 +145,7 @@ function NativeAdapter(query) {
             utils.extend(this, query);
             this.length = query.length;
             return;
-        } else if (query instanceof Element) {
+        } else if (query instanceof Node) {
             utils.extend(this, [query]);
             this.length = 1;
             return;
@@ -175,7 +175,7 @@ utils.extend(NativeAdapter.prototype, {
         } else {
             var parent = this[0].parentElement;
             this.remove();
-            new NativeAdapter(parent).append(html);
+            new NativeAdapter(parent).prepend(html);
         }
     },
 
@@ -249,7 +249,7 @@ NativeAdapter.getBlockFromElement = function (element) {
     };
 
     while (parent = parent.parentNode) {
-        attr = $(parent).attr(ID_ATTRIBUTE);
+        attr = new NativeAdapter(parent).attr(ID_ATTRIBUTE);
 
         if (attr) {
             require('../vars').allElements.some(isRightBlock);
@@ -475,7 +475,7 @@ function Primitive(bemjson, parent) {
     var _this = this;
 
     this.scope = this._createScope(parent);
-    window.allElements = this._allElements = require('../vars').allElements;
+    this._allElements = require('../vars').allElements;
     this._allElements.push(this);
 
     this._id = uniq();
@@ -844,9 +844,7 @@ Primitive.prototype = {
     repaint: function() {
         var adapter = require('../vars').adapter;
 
-        var wasShown = this.parent.isWasShown();
-
-        if (this.parent && !wasShown) {
+        if (this.parent && !this.parent.isWasShown()) {
             return;
         }
 
@@ -917,9 +915,11 @@ module.exports =  {
 
         utils.extend(globals, params);
 
-        var tree = this.processBemJson(params.bemjson);
-        window.tree = tree;
+        if (!Array.isArray(params.bemjson)) {
+            params.bemjson = [params.bemjson];
+        }
 
+        var tree = this.processBemJson(params.bemjson);
         var html = params.templateEngine.apply(tree.map(function(elem) {
             return elem.toBemjson();
         }));

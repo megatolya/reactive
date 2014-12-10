@@ -23,7 +23,7 @@ function Primitive(bemjson, parent) {
     var _this = this;
 
     this.scope = this._createScope(parent);
-    window.allElements = this._allElements = require('../vars').allElements;
+    this._allElements = require('../vars').allElements;
     this._allElements.push(this);
 
     this._id = uniq();
@@ -392,9 +392,7 @@ Primitive.prototype = {
     repaint: function() {
         var adapter = require('../vars').adapter;
 
-        var wasShown = this.parent.isWasShown();
-
-        if (this.parent && !wasShown) {
+        if (this.parent && !this.parent.isWasShown()) {
             return;
         }
 

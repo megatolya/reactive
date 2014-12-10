@@ -18,7 +18,7 @@ function NativeAdapter(query) {
             utils.extend(this, query);
             this.length = query.length;
             return;
-        } else if (query instanceof Element) {
+        } else if (query instanceof Node) {
             utils.extend(this, [query]);
             this.length = 1;
             return;
@@ -48,7 +48,7 @@ utils.extend(NativeAdapter.prototype, {
         } else {
             var parent = this[0].parentElement;
             this.remove();
-            new NativeAdapter(parent).append(html);
+            new NativeAdapter(parent).prepend(html);
         }
     },
 
@@ -122,7 +122,7 @@ NativeAdapter.getBlockFromElement = function (element) {
     };
 
     while (parent = parent.parentNode) {
-        attr = $(parent).attr(ID_ATTRIBUTE);
+        attr = new NativeAdapter(parent).attr(ID_ATTRIBUTE);
 
         if (attr) {
             require('../vars').allElements.some(isRightBlock);

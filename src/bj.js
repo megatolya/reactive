@@ -7,9 +7,11 @@ module.exports =  {
 
         utils.extend(globals, params);
 
-        var tree = this.processBemJson(params.bemjson);
-        window.tree = tree;
+        if (!Array.isArray(params.bemjson)) {
+            params.bemjson = [params.bemjson];
+        }
 
+        var tree = this.processBemJson(params.bemjson);
         var html = params.templateEngine.apply(tree.map(function(elem) {
             return elem.toBemjson();
         }));
