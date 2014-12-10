@@ -51,11 +51,11 @@ window.onload = function() {
 };
 
 ```
-[Пример](http://bem-bj.github.io/bj/api-methods/bind/bind.html)
+[Живой пример](http://bem-bj.github.io/bj/api-methods/bind/bind.html)
 
 ### showIf
 
-[Пример](http://bem-bj.github.io/bj/api-methods/show-if/show-if.html)
+[Живой пример](http://bem-bj.github.io/bj/api-methods/show-if/show-if.html)
 
 ### События
 ```javascript
