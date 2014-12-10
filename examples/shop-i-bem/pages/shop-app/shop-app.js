@@ -117,12 +117,16 @@ $(function() {
             }, {
                 block: 'button',
                 content: 'оформить заказ',
-                bind: 'cart',
+                bind: ['cart', 'app'],
                 mods: {
                     disabled: function() {
                         return (cartIsNotEmpty() && app.get('accepted')) ? '' : 'yes';
                     },
                     name: 'order'
+                },
+                showIf: cartIsNotEmpty,
+                onClick: function() {
+                    app.get('accepted') && alert('Done!');
                 }
             }]
         }]

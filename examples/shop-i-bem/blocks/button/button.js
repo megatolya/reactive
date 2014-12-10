@@ -39,7 +39,9 @@ BEM.DOM.decl('button', {
     },
 
     _onClick: function() {
-        this.trigger('click');
+        if (!this.hasMod('disabled', 'yes')) {
+            this.trigger('click');
+        }
     },
 
     _onMouseUp: function() {
