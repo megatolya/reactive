@@ -54,8 +54,10 @@ window.onload = function() {
 [Живой пример](http://bem-bj.github.io/bj/api-methods/bind/bind.html)
 
 ### showIf
+TODO
 
-[Живой пример](http://bem-bj.github.io/bj/api-methods/show-if/show-if.html)
+### repaint
+TODO
 
 ### События
 ```javascript
