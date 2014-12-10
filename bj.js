@@ -729,6 +729,15 @@ Primitive.prototype = {
 
         // сопоставляем scope и элемент
         var target = adapter.getTargetFromEvent(e);
+        var block = adapter.getBlockFromElement(target);
+
+        if (!block) {
+            return;
+        }
+
+        if (block._id !== this._id) {
+        }
+
         prepareIterableScope(target);
 
         var parent = target;
