@@ -5,7 +5,9 @@
 
 ## Живые примеры
 См. подробные примеры использования. 
+
 [TODO MVC](http://bem-bj.github.io/bj/todo/)
+
 [Магазин](https://github.com/bem-bj/bj/blob/master/examples/shop-i-bem/pages/shop-app/shop-app.js)
 
 ## Как подключить?
