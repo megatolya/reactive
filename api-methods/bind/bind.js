@@ -7,7 +7,7 @@ bh.match('header', function(ctx) {
 
 var App = Backbone.Model.extend({
     defaults: {
-        timeSpent: 0
+        text: 'hello world'
     }
 });
 
@@ -15,21 +15,20 @@ var app = new App();
 
 window.onload = function() {
     bj.init({
-        bemjson: {
+        bemjson: [{
             block: 'header',
             bind: 'app',
             content: function(app) {
-                return 'Потрачено зря времени: ' + app.get('timeSpent') + ' сек.';
+                return app.get('text');
             }
-        },
+        }, {
+            block: 'text',
+            content: 'Попробуй ввести в консоли `app.set(\'text\', \'что-то\');`'
+        }],
         models: {
             app: app
         },
         adapter: bj.adapters.native,
         templateEngine: bh
     });
-
-    setInterval(function() {
-        app.set('timeSpent', app.get('timeSpent') + 1);
-    }, 1000);
 };
