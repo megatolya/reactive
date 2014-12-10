@@ -145,7 +145,7 @@ function NativeAdapter(query) {
             utils.extend(this, query);
             this.length = query.length;
             return;
-        } else if (query instanceof Element) {
+        } else if (query instanceof Node) {
             utils.extend(this, [query]);
             this.length = 1;
             return;
@@ -249,7 +249,7 @@ NativeAdapter.getBlockFromElement = function (element) {
     };
 
     while (parent = parent.parentNode) {
-        attr = $(parent).attr(ID_ATTRIBUTE);
+        attr = new NativeAdapter(parent).attr(ID_ATTRIBUTE);
 
         if (attr) {
             require('../vars').allElements.some(isRightBlock);
