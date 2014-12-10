@@ -736,6 +736,7 @@ Primitive.prototype = {
         }
 
         if (block._id !== this._id) {
+            return;
         }
 
         prepareIterableScope(target);
