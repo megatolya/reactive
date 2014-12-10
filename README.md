@@ -104,7 +104,7 @@ window.onload = function() {
     });
 };
 ```
-[Пример](http://bem-bj.github.io/bj/api-methods/events/events.html)
+[Живой пример](http://bem-bj.github.io/bj/api-methods/events/events.html)
 
 ### Итерации
 ```javascript
