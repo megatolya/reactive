@@ -21,9 +21,6 @@ window.onload = function() {
             content: function(app) {
                 return app.get('text');
             }
-        }, {
-            block: 'text',
-            content: 'Попробуй ввести в консоли `app.set(\'text\', \'что-то\');`'
         }],
         models: {
             app: app
