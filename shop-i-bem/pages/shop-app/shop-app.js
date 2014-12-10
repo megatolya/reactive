@@ -123,6 +123,9 @@ $(function() {
                         return (cartIsNotEmpty() && app.get('accepted')) ? '' : 'yes';
                     },
                     name: 'order'
+                },
+                onClick: function() {
+                    app.get('accepted') && alert('Done!');
                 }
             }]
         }]
