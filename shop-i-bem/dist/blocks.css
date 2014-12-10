@@ -1,12 +1,3 @@
-.cart-logo
-{
-    width: 170px;
-    height: 194px;
-    background-size: cover;
-    background-position: 50% 50%;
-    background-image: url(cart-logo/logo.jpg);
-}
-
 .button
 {
     cursor: pointer;
@@ -46,6 +37,15 @@
 {
     line-height: 40px;
     font-size: 19px;
+}
+
+.cart-logo
+{
+    width: 170px;
+    height: 194px;
+    background-size: cover;
+    background-position: 50% 50%;
+    background-image: url(cart-logo/logo.jpg);
 }
 
 .checkbox {
