@@ -1,0 +1,89 @@
+.button
+{
+    cursor: pointer;
+    position: relative;
+}
+
+.button__input
+{
+    cursor: pointer;
+    position: absolute;
+    width: 100%;
+    opacity: 0;
+    z-index: 1;
+}
+
+.button__text
+{
+    cursor: pointer;
+    border: 1px solid gray;
+    position: relative;
+    padding: 5px;
+    margin: 15px;
+    border-radius: 5px;
+}
+
+.button_hovered_yes .button__text
+{
+    border: 1px solid rgb(224, 224, 224);
+}
+
+.button_active_yes .button__text
+{
+    background-color: rgb(253, 253, 253);
+}
+
+.button_name_order
+{
+    line-height: 40px;
+    font-size: 19px;
+}
+
+.checkbox {
+    position: relative;
+}
+
+.cart-logo
+{
+    width: 170px;
+    height: 194px;
+    background-size: cover;
+    background-position: 50% 50%;
+    background-image: url(cart-logo/logo.jpg);
+}
+
+.popup
+{
+    background: white;
+}
+
+@media (min-width:699px) {
+    .popup
+    {
+        position: absolute;
+        top: 0;
+        right: 10px;
+    }
+}
+
+.product {
+    margin: 20px;
+    box-shadow: 0px 0px 7px 0px rgba(0, 0,0,0.1);
+    padding: 20px;
+    width: 310px;
+    border-radius: 2px;
+}
+
+.product .button
+{
+    float: right;
+}
+
+.product_in-cart_yes .button {
+    float: initial;
+}
+.product_in-cart_yes {
+    box-shadow: none;
+    margin: 0;
+}
+

@@ -1,0 +1,75 @@
+* {
+    padding: 0;
+    margin: 0;
+    font-family: sans-serif;
+}
+
+body {
+    min-width: 900px;
+}
+
+.head-search {
+    min-width: 785px;
+    background: rgb(0, 166, 209);
+    padding: 40px 60px;
+    box-shadow: 0px 0px 21px 0px grey;
+    text-align: center;
+}
+
+.search {
+    width: 580px;
+    height: 40px;
+    font-size: 24px;
+}
+
+.todo-list {
+    margin: 50px auto;
+    width: 900px;
+    box-shadow: 0 0 22px 0px grey;
+    list-style-position: outside;
+    list-style-type: none;
+}
+
+.todo-item {
+    padding: 20px;
+    font-size: 20px;
+    border-bottom: 1px solid grey;
+}
+
+.todo-item_done_yes
+{
+    color: grey;
+    text-decoration: line-through;
+}
+
+.todo-item:last-child {
+    border-bottom: none;
+}
+
+.todo-item .checkbox {
+    float: right;
+}
+
+.button {
+    height: 44px;
+    padding: 0 23px;
+    box-sizing: border-box;
+    vertical-align: top;
+    font-size: 20px;
+    margin: 0 30px;
+    background: white;
+    border: 1px solid grey;
+    border-radius: 5px;
+}
+
+
+.button:active {
+    position: relative;
+    top: 1px;
+    left: 1px;
+}
+
+.lock,
+.lock .text {
+    margin: 10px;
+}

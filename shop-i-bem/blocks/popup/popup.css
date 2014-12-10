@@ -1,0 +1,13 @@
+.popup
+{
+    background: white;
+}
+
+@media (min-width:699px) {
+    .popup
+    {
+        position: absolute;
+        top: 0;
+        right: 10px;
+    }
+}
