@@ -6,9 +6,9 @@
 ## Живые примеры
 См. подробные примеры использования. 
 
-[TODO MVC](http://bem-bj.github.io/bj/todo/)
+[TODO MVC](http://bem-bj.github.io/bj/todo/) ([source](https://github.com/bem-bj/bj/blob/master/examples/todo/app.js))
 
-[Магазин](https://github.com/bem-bj/bj/blob/master/examples/shop-i-bem/pages/shop-app/shop-app.js)
+[Магазин](http://bem-bj.github.io/bj/shop-i-bem/pages/shop-app/shop-app.html) ([source]( https://github.com/bem-bj/bj/blob/master/examples/shop-i-bem/pages/shop-app/shop-app.js))
 
 ## Как подключить?
 
