@@ -124,6 +124,7 @@ $(function() {
                     },
                     name: 'order'
                 },
+                showIf: cartIsNotEmpty,
                 onClick: function() {
                     app.get('accepted') && alert('Done!');
                 }
