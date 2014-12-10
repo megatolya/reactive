@@ -39,10 +39,6 @@
     font-size: 19px;
 }
 
-.checkbox {
-    position: relative;
-}
-
 .cart-logo
 {
     width: 170px;
@@ -50,6 +46,10 @@
     background-size: cover;
     background-position: 50% 50%;
     background-image: url(cart-logo/logo.jpg);
+}
+
+.checkbox {
+    position: relative;
 }
 
 .popup
