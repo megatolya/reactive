@@ -9,6 +9,11 @@ gulp.task('js', function() {
     ])
     .pipe(concat('blocks.js'))
     .pipe(gulp.dest('./dist'));
+
+    gulp.src([
+        '../../node_modules/bh/lib/bh.js',
+    ])
+    .pipe(gulp.dest('./dist'));
 });
 
 gulp.task('css', function() {

@@ -108,7 +108,6 @@ BemAdapter.bindTo = function(block, eventName) {
     }
 
     BEM.blocks[block._name].on(eventName, function(event, data) {
-        console.log(block._name);
         block.handleEvent(event, data);
     });
 };
@@ -580,7 +579,6 @@ Primitive.registerListeners = function(block, events) {
     var adapter = require('../vars').adapter;
 
     Object.keys(events).forEach(function(eventName) {
-        console.log(eventName, block._name);
         adapter.bindTo(block, eventName);
     });
 };
