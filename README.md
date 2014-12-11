@@ -22,6 +22,7 @@
 * backbone
 * если используется БЕМ библиотека, то подлючить ее
 * подключить bj
+
 Собственно, главное, чтобы правильно bj был правильно инициализирован, см. следующий пункт.
 
 [Пример](https://github.com/bem-bj/bj/blob/master/examples/shop-i-bem/pages/shop-app/shop-app.html#L6-L20)
