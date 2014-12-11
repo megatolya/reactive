@@ -182,6 +182,8 @@ var myBemjson = [
     {
         block: 'header',
         bind: 'someModel',
+        // не будет перерисовываться при изменении `somModel`
+        repaint: false,
         content: function() {
             return Math.random();
         }
