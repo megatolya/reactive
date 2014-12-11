@@ -170,6 +170,23 @@ window.onload = function() {
 ```
 [Живой пример](http://bem-bj.github.io/bj/api-methods/events/events.html)
 
+### repaint
+Если хочется, чтобы блок отрисовался и больше никогда не перерисовывался.
+
+Это нужно, если блок сам хочет себя как-то перерисовывать (читай legacy).
+
+```javascript
+var myBemjson = [
+    {
+        block: 'header',
+        bind: 'someModel',
+        content: function() {
+            return Math.random();
+        }
+    }
+];
+```
+
 ### Итерации
 ```javascript
 var bh = new BH();
@@ -216,3 +233,4 @@ window.onload = function() {
 [Живой пример](http://bem-bj.github.io/bj/api-methods/iterate/iterate.html)
 
 ## с i-bem и без i-bem
+Для BJ нет особой разницы, как реализованы блоки. BJ работает в контексте bemjson, как bemjson будет распарсен шаблонизатором, он не знает. 
