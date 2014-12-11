@@ -16,7 +16,7 @@
 [Магазин](http://bem-bj.github.io/bj/shop-i-bem/pages/shop-app/shop-app.html) ([source]( https://github.com/bem-bj/bj/blob/master/examples/shop-i-bem/pages/shop-app/shop-app.js))
 
 ## Как подключить?
-Нужно подключить:
+Порядок примерно такой:
 * bh и создать его экземпляр (чтобы затем передать его в bj)
 * underscore
 * backbone
