@@ -1,0 +1,26 @@
+{
+  "name": "bj",
+  "version": "1.0.0",
+  "homepage": "https://github.com/megatolya/bj",
+  "authors": [
+    "Anatoliy Ostrovskiy <forgetthisbox@gmail.com>"
+  ],
+  "description": "BEM MVC framework",
+  "main": "dist/bj.js",
+  "keywords": [
+    "bj",
+    "bem",
+    "bemjson"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests",
+    "src",
+    "keynote",
+    "examples"
+  ]
+}

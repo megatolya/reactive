@@ -18,12 +18,12 @@ var Product = Backbone.Model.extend({
 });
 
 var products = new Products([
-    new Product('item1', 100),
-    new Product('item2', 100),
-    new Product('item3', 400),
-    new Product('item4', 400),
-    new Product('item5', 600),
-    new Product('item6', 600)
+    //new Product('item1', 100),
+    //new Product('item2', 100),
+    //new Product('item3', 400),
+    //new Product('item4', 400),
+    //new Product('item5', 600),
+    //new Product('item6', 600)
 ]);
 
 bh.match('product__title', function(ctx) {

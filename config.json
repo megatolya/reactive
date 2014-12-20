@@ -1,5 +1,5 @@
 {
     "outputFolder": "./dist",
-    "outputFilename": "bj.js",
-    "output-minified": "bj.min.js"
+    "fileName": "bj.js",
+    "minifiedFileName": "bj.min.js"
 }
