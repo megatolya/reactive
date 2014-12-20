@@ -146,8 +146,8 @@ function getBlockFromElement(element) {
         return res;
     }
 
-    var parent;
-    while (parent = element.parentNode) {
+    var parent = element;
+    while (parent = parent.parentNode) {
         attr = $(parent).attr(ID_ATTRIBUTE);
 
         if (attr) {
@@ -184,7 +184,6 @@ Primitive.registerListeners = function(block, events) {
 
                 registered[eventName].some(function(block) {
                     var triggeredBlock = originalTriggeredBlock;
-
                     if (block === triggeredBlock) {
                         block.handleEvent(e);
                         return true;
@@ -371,7 +370,8 @@ Primitive.prototype = {
     getDomElement: function() {
         var adapter = require('../vars').adapter;
 
-        return adapter('[' + ID_ATTRIBUTE + '=%id]'.replace('%id', this._id));
+        var domElem = adapter('[' + ID_ATTRIBUTE + '=%id]'.replace('%id', this._id));
+        return domElem;
 
     },
 
@@ -464,7 +464,9 @@ Primitive.prototype = {
     repaint: function() {
         var adapter = require('../vars').adapter;
 
-        if (this.parent && !this.parent.isWasShown()) {
+        var wasShown = this.parent.isWasShown();
+
+        if (this.parent && !wasShown) {
             return;
         }
 

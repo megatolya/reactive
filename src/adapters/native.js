@@ -8,10 +8,13 @@ function NativeAdapter(query) {
 
     if (query) {
         if (typeof query === 'string') {
-            utils.extend(this, document.querySelectorAll(query));
+            var list = document.querySelectorAll(query);
+            utils.extend(this, list);
+            this.length = list.length;
             return;
         } else if (query instanceof NodeList) {
             utils.extend(this, query);
+            this.length = query.length;
             return;
         } else if (query instanceof Element) {
             utils.extend(this, [query]);
