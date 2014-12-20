@@ -2,8 +2,8 @@ var utils = require('../utils');
 var Primitive = require('./primitive');
 
 function Block(bemjson, parent) {
-    Primitive.apply(this, arguments);
     this._name = bemjson.block;
+    Primitive.apply(this, arguments);
 }
 
 Block.prototype = Object.create(Primitive.prototype);

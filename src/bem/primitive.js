@@ -123,92 +123,11 @@ Primitive.isPrimitive = function(bemjson) {
     }
 };
 
-function getBlockFromElement(element) {
-    var adapter = require('../vars').adapter;
-    var $element = adapter(element);
-    var attr = $element.attr(ID_ATTRIBUTE);
-
-    var res = null;
-
-    if (attr) {
-        require('../vars').allElements.some(function(block) {
-            if (block._id === attr) {
-                res = block;
-                return true;
-            }
-
-            return false;
-        });
-    }
-
-    if (res) {
-        return res;
-    }
-
-    var parent = element;
-    var isRightBlock = function(block) {
-        if (block._id === attr) {
-            res = block;
-            return true;
-        }
-
-        return false;
-    };
-
-    while (parent = parent.parentNode) {
-        attr = $(parent).attr(ID_ATTRIBUTE);
-
-        if (attr) {
-            require('../vars').allElements.some(isRightBlock);
-            break;
-        }
-    }
-
-    return res;
-}
-
-function getBlockFromEvent(event) {
-    return getBlockFromElement(event.target);
-}
-
 Primitive.registerListeners = function(block, events) {
-    var registered = this._registered = this._registered || {};
     var adapter = require('../vars').adapter;
 
     Object.keys(events).forEach(function(eventName) {
-        if (!registered[eventName]) {
-            adapter.bindToDoc(eventName, function(e) {
-                var originalTriggeredBlock = getBlockFromEvent(e);
-
-                if (!originalTriggeredBlock) {
-                    return;
-                }
-
-                registered[eventName].some(function(block) {
-                    var triggeredBlock = originalTriggeredBlock;
-                    if (block === triggeredBlock) {
-                        block.handleEvent(e);
-                        return true;
-                    }
-
-                    if (!triggeredBlock.parent) {
-                        return false;
-                    }
-
-                    while (triggeredBlock = triggeredBlock.parent) {
-                        if (block === triggeredBlock) {
-                            block.handleEvent(e);
-                            return true;
-                        }
-                    }
-
-                    return false;
-                });
-            });
-            registered[eventName] = [block];
-        } else {
-            registered[eventName].push(block);
-        }
+        adapter.bindTo(block, eventName);
     });
 };
 
@@ -344,22 +263,23 @@ Primitive.prototype = {
     },
 
     handleEvent: function(e) {
+        var adapter = require('../vars').adapter;
         function prepareIterableScope(elem) {
-            var adapter = require('../vars').adapter;
             var adaptedElement = adapter(elem);
             var json = adaptedElement.attr(DATA_ATTRIBUTE);
 
             if (json) {
-                var block = getBlockFromElement(elem);
+                var block = adapter.getBlockFromElement(elem);
                 var data = JSON.parse(json);
                 block.scope[data.name] = block._collection.models[data.index];
             }
         }
 
         // сопоставляем scope и элемент
-        prepareIterableScope(e.target);
+        var target = adapter.getTargetFromEvent(e);
+        prepareIterableScope(target);
 
-        var parent = e.target;
+        var parent = target;
         while (parent = parent.parentElement) {
             prepareIterableScope(parent);
         }

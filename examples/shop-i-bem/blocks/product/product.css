@@ -1,0 +1,21 @@
+.product {
+    margin: 20px;
+    box-shadow: 0px 0px 7px 0px rgba(0, 0,0,0.1);
+    padding: 20px;
+    width: 310px;
+    border-radius: 2px;
+}
+
+.product .button
+{
+    float: right;
+}
+
+.product_in-cart_yes .button {
+    float: initial;
+}
+.product_in-cart_yes {
+    box-shadow: none;
+    margin: 0;
+}
+

@@ -3,11 +3,7 @@ var concat= require('gulp-concat');
 
 gulp.task('js', function() {
     gulp.src([
-        //'libs/jquery-inherit/*.js',
-        //'libs/i-bem/i-bem.js',
         'libs/i-bem/i-bem__stuff.js',
-        //'libs/i-bem/i-bem__internal.js',
-        //'libs/i-bem/i-bem__dom.js',
         'blocks/**/*.js'
 
     ])
@@ -19,8 +15,16 @@ gulp.task('css', function() {
     gulp.src([
         'blocks/**/*.css'
     ])
-        .pipe(concat('blocks.css'))
-        .pipe(gulp.dest('./dist'));
+    .pipe(concat('blocks.css'))
+    .pipe(gulp.dest('./dist'));
+});
+gulp.task('images', function() {
+    gulp.src([
+        'blocks/**/*.jpg',
+        'blocks/**/*.png',
+        'blocks/**/*.gif'
+    ])
+    .pipe(gulp.dest('./dist'));
 });
 
-gulp.task('default', ['js', 'css']);
+gulp.task('default', ['js', 'css', 'images']);

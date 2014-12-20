@@ -18,7 +18,7 @@ var Product = Backbone.Model.extend({
 });
 
 var products = new Products([
-    new Product('iphone 5', 100),
+    new Product('iPhone 5', 100),
     new Product('iPhone 5C', 200),
     new Product('iPhone 5S', 300),
     new Product('iPhone 6', 400),
@@ -30,19 +30,15 @@ bh.match('product__title', function(ctx) {
     ctx.tag('span');
 });
 
-bh.match('product__btn', function(ctx) {
-    ctx.tag('button');
-    ctx.attr('type', 'button');
-    ctx.content('купить');
-});
-
 $(function() {
     var bemjson = [{
-        block: 'checkbox',
-        onChange: function(e) {
-            app.set('text', e.target.checked ? 'checked' : 'unchecked');
-        }
-    }, {
+            block: 'header',
+            content: {
+                elem: 'h1',
+                tag: 'h1',
+                content: 'Супер магазин'
+            }
+        }, {
         block: 'products',
         content: {
             block: 'product',
@@ -52,17 +48,20 @@ $(function() {
                 elem: 'title',
                 bind: 'product',
                 content: function(product) {
-                    return product.get('name') + ' ' + product.get('price')
+                    return product.get('name') + ' ' + product.get('price') + ' $'
                 }
             }, {
-                elem: 'btn',
+                block: 'button',
                 bind: 'product',
                 onClick: function(event, product) {
                     products.remove(product);
                     cart.add(product);
-                }
+                },
+                content: 'Купить'
             }]
         },
+    }, {
+        block: 'cart-logo'
     }, {
         block: 'cart',
         content: {
@@ -75,6 +74,11 @@ $(function() {
             content: function(product) {
                 return product.get('name');
             }
+        }
+    }, {
+        block: 'checkbox',
+        onChange: function(e) {
+            app.set('text', e.target.checked ? 'checked' : 'unchecked');
         }
     }];
 

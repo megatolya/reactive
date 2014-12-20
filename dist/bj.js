@@ -10,6 +10,9 @@ var utils = require('../utils');
 var errors = require('../errors');
 var FixmeError = errors.FixmeError;
 
+var ATTRIBUTE = 'bj';
+var ID_ATTRIBUTE = 'data-' + ATTRIBUTE;
+
 function BemAdapter(query) {
     if (!(this instanceof BemAdapter)) {
         return new BemAdapter(query);
@@ -46,7 +49,7 @@ utils.extend(BemAdapter.prototype, {
     },
 
     after: function(html) {
-        BEM.DOM.after(this.$, html);
+        BEM.DOM.after(this.$.eq(this.$.length - 1), html);
     },
 
     before: function(html) {
@@ -63,22 +66,67 @@ utils.extend(BemAdapter.prototype, {
     }
 });
 
-BemAdapter.bindToDoc = function(event, handler) {
-    document.addEventListener(event, handler, false);
+// TODO перенести
+function getBlockById(id) {
+    var allElements = require('../vars').allElements;
+
+    // TODO
+    return allElements.filter(function(block) {
+        return block._id === id;
+    })[0];
+}
+
+BemAdapter.getBlockFromElement = function(element) {
+    var parent = $(element);
+    var id = parent.attr(ID_ATTRIBUTE);
+
+    if (id) {
+        return getBlockById(id);
+    }
+
+    while(parent = parent.parent() && parent.length !== 0) {
+        id = parent.attr(ID_ATTRIBUTE);
+
+        if (id) {
+            return getBlockById(id);
+        }
+    }
+
+    return null;
 };
+
+BemAdapter.getTargetFromEvent = function(event) {
+    return event.target.domElem.get(0);
+};
+
+// blockname -> {eventName: true}
+var registered = {};
+
+BemAdapter.bindTo = function(block, eventName) {
+    if (registered[block._name] && registered[block._name][eventName]) {
+        return;
+    }
+
+    BEM.blocks[block._name].on(eventName, function(event, data) {
+        block.handleEvent(event, data);
+    });
+};
+
 BemAdapter.init = function() {
     BEM.DOM.init();
 };
 
 module.exports = BemAdapter;
 
-},{"../errors":12,"../utils":14,"./common":1}],3:[function(require,module,exports){
+},{"../errors":12,"../utils":14,"../vars":15,"./common":1}],3:[function(require,module,exports){
 module.exports = {
     native: require('./native'),
     'i-bem': require('./i-bem')
 };
 
 },{"./i-bem":2,"./native":4}],4:[function(require,module,exports){
+var ATTRIBUTE = 'bj';
+var ID_ATTRIBUTE = 'data-' + ATTRIBUTE;
 var commonProps = require('./common');
 var utils = require('../utils');
 
@@ -123,7 +171,7 @@ utils.extend(NativeAdapter.prototype, {
 
         if (previousSibling) {
             this.remove();
-            previousSibling.after(html);
+            new NativeAdapter(previousSibling).after(html);
         } else {
             var parent = this[0].parentElement;
             this.remove();
@@ -139,10 +187,12 @@ utils.extend(NativeAdapter.prototype, {
         this[0].innerHTML = html += this[0].innerHTML;
     },
 
+    // FIXME
     after: function(html) {
         this[this.length - 1].outerHTML += html;
     },
 
+    // FIXME
     before: function(html) {
         this[0].outerHTML = html + this[0].outerHTML;
     },
@@ -162,20 +212,105 @@ utils.extend(NativeAdapter.prototype, {
     }
 });
 
-NativeAdapter.bindToDoc = function(event, handler) {
-    document.addEventListener(event, handler, false);
+NativeAdapter.getTargetFromEvent = function(event) {
+    return event.target;
 };
+
+NativeAdapter.getBlockFromElement = function (element) {
+    var adapter = require('../vars').adapter;
+    var $element = adapter(element);
+    var attr = $element.attr(ID_ATTRIBUTE);
+
+    var res = null;
+
+    if (attr) {
+        require('../vars').allElements.some(function(block) {
+            if (block._id === attr) {
+                res = block;
+                return true;
+            }
+
+            return false;
+        });
+    }
+
+    if (res) {
+        return res;
+    }
+
+    var parent = element;
+    var isRightBlock = function(block) {
+        if (block._id === attr) {
+            res = block;
+            return true;
+        }
+
+        return false;
+    };
+
+    while (parent = parent.parentNode) {
+        attr = $(parent).attr(ID_ATTRIBUTE);
+
+        if (attr) {
+            require('../vars').allElements.some(isRightBlock);
+            break;
+        }
+    }
+
+    return res;
+};
+
+var registered = {};
+
+NativeAdapter.bindTo = function(block, eventName) {
+    if (!registered[eventName]) {
+        registered[eventName] = [block];
+    } else {
+        registered[eventName].push(block);
+        return;
+    }
+
+    document.addEventListener(eventName, function(e) {
+        var originalTriggeredBlock = NativeAdapter.getBlockFromElement(e.target);
+
+        if (!originalTriggeredBlock) {
+            return;
+        }
+
+        registered[eventName].some(function(block) {
+            var triggeredBlock = originalTriggeredBlock;
+            if (block === triggeredBlock) {
+                block.handleEvent(e);
+                return true;
+            }
+
+            if (!triggeredBlock.parent) {
+                return false;
+            }
+
+            while (triggeredBlock = triggeredBlock.parent) {
+                if (block === triggeredBlock) {
+                    block.handleEvent(e);
+                    return true;
+                }
+            }
+
+            return false;
+        });
+    }, false);
+};
+
 NativeAdapter.init = function() {};
 
 module.exports = NativeAdapter;
 
-},{"../utils":14,"./common":1}],5:[function(require,module,exports){
+},{"../utils":14,"../vars":15,"./common":1}],5:[function(require,module,exports){
 var utils = require('../utils');
 var Primitive = require('./primitive');
 
 function Block(bemjson, parent) {
-    Primitive.apply(this, arguments);
     this._name = bemjson.block;
+    Primitive.apply(this, arguments);
 }
 
 Block.prototype = Object.create(Primitive.prototype);
@@ -227,8 +362,8 @@ var Primitive = require('./primitive');
 var utils = require('../utils');
 
 function Element(bemjson, parent) {
-    Primitive.apply(this, arguments);
     this._name = bemjson.elem;
+    Primitive.apply(this, arguments);
 }
 
 Element.isElement = function(bemjson) {
@@ -440,92 +575,11 @@ Primitive.isPrimitive = function(bemjson) {
     }
 };
 
-function getBlockFromElement(element) {
-    var adapter = require('../vars').adapter;
-    var $element = adapter(element);
-    var attr = $element.attr(ID_ATTRIBUTE);
-
-    var res = null;
-
-    if (attr) {
-        require('../vars').allElements.some(function(block) {
-            if (block._id === attr) {
-                res = block;
-                return true;
-            }
-
-            return false;
-        });
-    }
-
-    if (res) {
-        return res;
-    }
-
-    var parent = element;
-    var isRightBlock = function(block) {
-        if (block._id === attr) {
-            res = block;
-            return true;
-        }
-
-        return false;
-    };
-
-    while (parent = parent.parentNode) {
-        attr = $(parent).attr(ID_ATTRIBUTE);
-
-        if (attr) {
-            require('../vars').allElements.some(isRightBlock);
-            break;
-        }
-    }
-
-    return res;
-}
-
-function getBlockFromEvent(event) {
-    return getBlockFromElement(event.target);
-}
-
 Primitive.registerListeners = function(block, events) {
-    var registered = this._registered = this._registered || {};
     var adapter = require('../vars').adapter;
 
     Object.keys(events).forEach(function(eventName) {
-        if (!registered[eventName]) {
-            adapter.bindToDoc(eventName, function(e) {
-                var originalTriggeredBlock = getBlockFromEvent(e);
-
-                if (!originalTriggeredBlock) {
-                    return;
-                }
-
-                registered[eventName].some(function(block) {
-                    var triggeredBlock = originalTriggeredBlock;
-                    if (block === triggeredBlock) {
-                        block.handleEvent(e);
-                        return true;
-                    }
-
-                    if (!triggeredBlock.parent) {
-                        return false;
-                    }
-
-                    while (triggeredBlock = triggeredBlock.parent) {
-                        if (block === triggeredBlock) {
-                            block.handleEvent(e);
-                            return true;
-                        }
-                    }
-
-                    return false;
-                });
-            });
-            registered[eventName] = [block];
-        } else {
-            registered[eventName].push(block);
-        }
+        adapter.bindTo(block, eventName);
     });
 };
 
@@ -661,22 +715,23 @@ Primitive.prototype = {
     },
 
     handleEvent: function(e) {
+        var adapter = require('../vars').adapter;
         function prepareIterableScope(elem) {
-            var adapter = require('../vars').adapter;
             var adaptedElement = adapter(elem);
             var json = adaptedElement.attr(DATA_ATTRIBUTE);
 
             if (json) {
-                var block = getBlockFromElement(elem);
+                var block = adapter.getBlockFromElement(elem);
                 var data = JSON.parse(json);
                 block.scope[data.name] = block._collection.models[data.index];
             }
         }
 
         // сопоставляем scope и элемент
-        prepareIterableScope(e.target);
+        var target = adapter.getTargetFromEvent(e);
+        prepareIterableScope(target);
 
-        var parent = e.target;
+        var parent = target;
         while (parent = parent.parentElement) {
             prepareIterableScope(parent);
         }

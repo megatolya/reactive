@@ -3,6 +3,9 @@ var utils = require('../utils');
 var errors = require('../errors');
 var FixmeError = errors.FixmeError;
 
+var ATTRIBUTE = 'bj';
+var ID_ATTRIBUTE = 'data-' + ATTRIBUTE;
+
 function BemAdapter(query) {
     if (!(this instanceof BemAdapter)) {
         return new BemAdapter(query);
@@ -39,7 +42,7 @@ utils.extend(BemAdapter.prototype, {
     },
 
     after: function(html) {
-        BEM.DOM.after(this.$, html);
+        BEM.DOM.after(this.$.eq(this.$.length - 1), html);
     },
 
     before: function(html) {
@@ -56,9 +59,52 @@ utils.extend(BemAdapter.prototype, {
     }
 });
 
-BemAdapter.bindToDoc = function(event, handler) {
-    document.addEventListener(event, handler, false);
+// TODO перенести
+function getBlockById(id) {
+    var allElements = require('../vars').allElements;
+
+    // TODO
+    return allElements.filter(function(block) {
+        return block._id === id;
+    })[0];
+}
+
+BemAdapter.getBlockFromElement = function(element) {
+    var parent = $(element);
+    var id = parent.attr(ID_ATTRIBUTE);
+
+    if (id) {
+        return getBlockById(id);
+    }
+
+    while (parent = parent.parent() && parent.length !== 0) {
+        id = parent.attr(ID_ATTRIBUTE);
+
+        if (id) {
+            return getBlockById(id);
+        }
+    }
+
+    return null;
 };
+
+BemAdapter.getTargetFromEvent = function(event) {
+    return event.target.domElem.get(0);
+};
+
+// blockname -> {eventName: true}
+var registered = {};
+
+BemAdapter.bindTo = function(block, eventName) {
+    if (registered[block._name] && registered[block._name][eventName]) {
+        return;
+    }
+
+    BEM.blocks[block._name].on(eventName, function(event, data) {
+        block.handleEvent(event, data);
+    });
+};
+
 BemAdapter.init = function() {
     BEM.DOM.init();
 };

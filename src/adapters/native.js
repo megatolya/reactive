@@ -1,3 +1,5 @@
+var ATTRIBUTE = 'bj';
+var ID_ATTRIBUTE = 'data-' + ATTRIBUTE;
 var commonProps = require('./common');
 var utils = require('../utils');
 
@@ -42,7 +44,7 @@ utils.extend(NativeAdapter.prototype, {
 
         if (previousSibling) {
             this.remove();
-            previousSibling.after(html);
+            new NativeAdapter(previousSibling).after(html);
         } else {
             var parent = this[0].parentElement;
             this.remove();
@@ -58,10 +60,12 @@ utils.extend(NativeAdapter.prototype, {
         this[0].innerHTML = html += this[0].innerHTML;
     },
 
+    // FIXME
     after: function(html) {
         this[this.length - 1].outerHTML += html;
     },
 
+    // FIXME
     before: function(html) {
         this[0].outerHTML = html + this[0].outerHTML;
     },
@@ -81,9 +85,94 @@ utils.extend(NativeAdapter.prototype, {
     }
 });
 
-NativeAdapter.bindToDoc = function(event, handler) {
-    document.addEventListener(event, handler, false);
+NativeAdapter.getTargetFromEvent = function(event) {
+    return event.target;
 };
+
+NativeAdapter.getBlockFromElement = function (element) {
+    var adapter = require('../vars').adapter;
+    var $element = adapter(element);
+    var attr = $element.attr(ID_ATTRIBUTE);
+
+    var res = null;
+
+    if (attr) {
+        require('../vars').allElements.some(function(block) {
+            if (block._id === attr) {
+                res = block;
+                return true;
+            }
+
+            return false;
+        });
+    }
+
+    if (res) {
+        return res;
+    }
+
+    var parent = element;
+    var isRightBlock = function(block) {
+        if (block._id === attr) {
+            res = block;
+            return true;
+        }
+
+        return false;
+    };
+
+    while (parent = parent.parentNode) {
+        attr = $(parent).attr(ID_ATTRIBUTE);
+
+        if (attr) {
+            require('../vars').allElements.some(isRightBlock);
+            break;
+        }
+    }
+
+    return res;
+};
+
+var registered = {};
+
+NativeAdapter.bindTo = function(block, eventName) {
+    if (!registered[eventName]) {
+        registered[eventName] = [block];
+    } else {
+        registered[eventName].push(block);
+        return;
+    }
+
+    document.addEventListener(eventName, function(e) {
+        var originalTriggeredBlock = NativeAdapter.getBlockFromElement(e.target);
+
+        if (!originalTriggeredBlock) {
+            return;
+        }
+
+        registered[eventName].some(function(block) {
+            var triggeredBlock = originalTriggeredBlock;
+            if (block === triggeredBlock) {
+                block.handleEvent(e);
+                return true;
+            }
+
+            if (!triggeredBlock.parent) {
+                return false;
+            }
+
+            while (triggeredBlock = triggeredBlock.parent) {
+                if (block === triggeredBlock) {
+                    block.handleEvent(e);
+                    return true;
+                }
+            }
+
+            return false;
+        });
+    }, false);
+};
+
 NativeAdapter.init = function() {};
 
 module.exports = NativeAdapter;

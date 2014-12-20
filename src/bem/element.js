@@ -3,8 +3,8 @@ var Primitive = require('./primitive');
 var utils = require('../utils');
 
 function Element(bemjson, parent) {
-    Primitive.apply(this, arguments);
     this._name = bemjson.elem;
+    Primitive.apply(this, arguments);
 }
 
 Element.isElement = function(bemjson) {

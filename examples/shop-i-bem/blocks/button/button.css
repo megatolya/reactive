@@ -1,0 +1,31 @@
+.button {
+    cursor: pointer;
+    position: relative;
+}
+
+.button__input {
+    cursor: pointer;
+    position: absolute;
+    width: 100%;
+    opacity: 0;
+    z-index: 1;
+}
+
+.button__text {
+    cursor: pointer;
+    border: 1px solid gray;
+    position: relative;
+    padding: 5px;
+    margin: 15px;
+    border-radius: 5px;
+}
+
+.button_hovered_yes .button__text
+{
+    border: 1px solid rgb(224, 224, 224);
+}
+
+.button_active_yes .button__text
+{
+    background-color: rgb(253, 253, 253);
+}
