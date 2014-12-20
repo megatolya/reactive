@@ -25,11 +25,11 @@ utils.extend(BemAdapter.prototype, {
     },
 
     append: function(html) {
-        BEM.DOM.append(this[0], html);
+        BEM.DOM.append(this.$.eq(0), html);
     },
 
     prepend: function(html) {
-        BEM.DOM.prepend(this[0], html);
+        BEM.DOM.prepend(this.$.eq(0), html);
     },
 
     after: function(html) {
