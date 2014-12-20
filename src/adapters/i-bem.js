@@ -18,10 +18,16 @@ utils.extend(BemAdapter.prototype, {
 
     remove: function() {
         BEM.DOM.destruct(this.$);
+        // TODO надо/нет?
+        this.$ = null;
     },
 
     replaceWith: function(html) {
-        BEM.DOM.replace(this.$, html);
+        var $html = $(html);
+        this.before($html);
+        this.remove();
+        this.$ = $html;
+        BEM.DOM.init($html);
     },
 
     append: function(html) {
@@ -37,7 +43,8 @@ utils.extend(BemAdapter.prototype, {
     },
 
     before: function(html) {
-        BEM.DOM.before(this.$, html);
+        BEM.DOM.before(this.$.eq(0), html);
+        BEM.DOM.init();
     },
 
     html: function(html) {

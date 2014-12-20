@@ -1,6 +1,6 @@
 var Primitive = require('./primitive');
 var Block = require('./block');
-var Element = require('./element');
+var BEMElement = require('./element');
 
 module.exports = {
     createBemObject: function(bemjson, parent) {
@@ -12,8 +12,8 @@ module.exports = {
             return new Block(bemjson, parent);
         }
 
-        if (Element.isElement(bemjson)) {
-            return new Element(bemjson, parent);
+        if (BEMElement.isElement(bemjson)) {
+            return new BEMElement(bemjson, parent);
         }
 
         throw new TypeError('Uknown type of bemjson: ' + typeof bemjson);

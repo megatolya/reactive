@@ -58,7 +58,6 @@ function Primitive(bemjson, parent) {
 
             if (!model) {
                 return;
-                //throw new Error('No such model was supplied: ' + binding);
             }
         }
 
@@ -147,18 +146,20 @@ function getBlockFromElement(element) {
     }
 
     var parent = element;
+    var isRightBlock = function(block) {
+        if (block._id === attr) {
+            res = block;
+            return true;
+        }
+
+        return false;
+    };
+
     while (parent = parent.parentNode) {
         attr = $(parent).attr(ID_ATTRIBUTE);
 
         if (attr) {
-            require('../vars').allElements.some(function(block) {
-                if (block._id === attr) {
-                    res = block;
-                    return true;
-                }
-
-                return false;
-            });
+            require('../vars').allElements.some(isRightBlock);
             break;
         }
     }
@@ -179,8 +180,9 @@ Primitive.registerListeners = function(block, events) {
             adapter.bindToDoc(eventName, function(e) {
                 var originalTriggeredBlock = getBlockFromEvent(e);
 
-                if (!originalTriggeredBlock)
+                if (!originalTriggeredBlock) {
                     return;
+                }
 
                 registered[eventName].some(function(block) {
                     var triggeredBlock = originalTriggeredBlock;
@@ -344,7 +346,7 @@ Primitive.prototype = {
     handleEvent: function(e) {
         function prepareIterableScope(elem) {
             var adapter = require('../vars').adapter;
-            var adaptedElement = adapter(elem)
+            var adaptedElement = adapter(elem);
             var json = adaptedElement.attr(DATA_ATTRIBUTE);
 
             if (json) {
@@ -401,11 +403,14 @@ Primitive.prototype = {
     },
 
     toBemjson: function() {
+        var blocks;
+        var block;
+
         this._loops = this._loops || ((this.parent || {})._loops ? this.parent._loops.slice() : []);
 
         if (this._iterable) {
             this._loops.push(this._iteratingBindingName);
-            var blocks = this._collection.models.map(function(model, index) {
+            blocks = this._collection.models.map(function(model, index) {
                 this.scope[this._iteratingBindingName] = model;
 
                 var models = this._getModels();
@@ -415,15 +420,18 @@ Primitive.prototype = {
                     index: index
                 });
 
-                if (!this.isShown(models))
+                if (!this.isShown(models)) {
                     return null;
+                }
 
                 return this._formatData({
                     block: this._name,
                     mods: this._getMods(),
-                    content: this._content ? this._content.apply(null, models) : (this._children || []).map(function(child) {
-                        return child.toBemjson();
-                    }, this),
+                    content: this._content
+                        ? this._content.apply(null, models)
+                        : (this._children || []).map(function(child) {
+                            return child.toBemjson();
+                        }, this),
                     attrs: utils.extend(loopAttrs, this._getAttrs())
                 });
             }, this);
@@ -432,7 +440,7 @@ Primitive.prototype = {
                 return null;
             }
 
-            var block = this._formatData({
+            block = this._formatData({
                 block: this._name,
                 mods: this._getMods(),
                 // getchildrenorcontent
@@ -474,6 +482,8 @@ Primitive.prototype = {
             return;
         }
 
+        var html;
+
         if (this.isWasShown()) {
             var domNode = this.getDomElement();
 
@@ -483,7 +493,7 @@ Primitive.prototype = {
             var prev = this.getPreviousSibling();
 
             if (!prev) {
-                var html = this.toHTML();
+                html = this.toHTML();
 
                 if (!this.parent) {
                     adapter(adapter().root).prepend(html);
@@ -510,7 +520,7 @@ Primitive.prototype = {
                 if (this.parent) {
                     this.parent.getDomElement().prepend(html);
                 } else {
-                    var html = this.toHTML();
+                    html = this.toHTML();
                     adapter(adapter().root).prepend(html);
                 }
             }

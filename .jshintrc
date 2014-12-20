@@ -1,0 +1,11 @@
+{
+    "expr"    : true,
+    "undef"   : true,
+    "predef"  : ["require", "BEM", "BH", "module", "NodeList"],
+    "browser" : true,
+    "jquery"  : true,
+    "boss"    : true,
+    "sub"     : true,
+    "laxbreak":true
+}
+

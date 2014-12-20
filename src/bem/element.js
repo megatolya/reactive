@@ -35,6 +35,6 @@ utils.extend(Element.prototype, {
     }
 });
 Element.prototype.constructor = Element;
-Element.prototype
+Element.prototype;
 
 module.exports = Element;

@@ -25,10 +25,16 @@ utils.extend(BemAdapter.prototype, {
 
     remove: function() {
         BEM.DOM.destruct(this.$);
+        // TODO надо/нет?
+        this.$ = null;
     },
 
     replaceWith: function(html) {
-        BEM.DOM.replace(this.$, html);
+        var $html = $(html);
+        this.before($html);
+        this.remove();
+        this.$ = $html;
+        BEM.DOM.init($html);
     },
 
     append: function(html) {
@@ -44,7 +50,8 @@ utils.extend(BemAdapter.prototype, {
     },
 
     before: function(html) {
-        BEM.DOM.before(this.$, html);
+        BEM.DOM.before(this.$.eq(0), html);
+        BEM.DOM.init();
     },
 
     html: function(html) {
@@ -193,15 +200,16 @@ module.exports = Block;
 
 },{"../utils":14,"./primitive":10}],6:[function(require,module,exports){
 var Param = require('./param');
+var utils = require('../utils');
 
 function ChangeableParam(key, value) {
     this.key = key;
     this._value = value;
 }
 
-ChangeableParam.prototype = {
-    __proto__: Param,
+ChangeableParam.prototype = new Param();
 
+utils.extend(ChangeableParam.prototype, {
     constructor: ChangeableParam,
 
     valueOf: function(args) {
@@ -209,11 +217,11 @@ ChangeableParam.prototype = {
         res[this.key] = this._value.apply(null, args);
         return res;
     }
-};
+});
 
 module.exports = ChangeableParam;
 
-},{"./param":9}],7:[function(require,module,exports){
+},{"../utils":14,"./param":9}],7:[function(require,module,exports){
 var Block = require('./block');
 var Primitive = require('./primitive');
 var utils = require('../utils');
@@ -251,14 +259,14 @@ utils.extend(Element.prototype, {
     }
 });
 Element.prototype.constructor = Element;
-Element.prototype
+Element.prototype;
 
 module.exports = Element;
 
 },{"../utils":14,"./block":5,"./primitive":10}],8:[function(require,module,exports){
 var Primitive = require('./primitive');
 var Block = require('./block');
-var Element = require('./element');
+var BEMElement = require('./element');
 
 module.exports = {
     createBemObject: function(bemjson, parent) {
@@ -270,8 +278,8 @@ module.exports = {
             return new Block(bemjson, parent);
         }
 
-        if (Element.isElement(bemjson)) {
-            return new Element(bemjson, parent);
+        if (BEMElement.isElement(bemjson)) {
+            return new BEMElement(bemjson, parent);
         }
 
         throw new TypeError('Uknown type of bemjson: ' + typeof bemjson);
@@ -367,7 +375,6 @@ function Primitive(bemjson, parent) {
 
             if (!model) {
                 return;
-                //throw new Error('No such model was supplied: ' + binding);
             }
         }
 
@@ -456,18 +463,20 @@ function getBlockFromElement(element) {
     }
 
     var parent = element;
+    var isRightBlock = function(block) {
+        if (block._id === attr) {
+            res = block;
+            return true;
+        }
+
+        return false;
+    };
+
     while (parent = parent.parentNode) {
         attr = $(parent).attr(ID_ATTRIBUTE);
 
         if (attr) {
-            require('../vars').allElements.some(function(block) {
-                if (block._id === attr) {
-                    res = block;
-                    return true;
-                }
-
-                return false;
-            });
+            require('../vars').allElements.some(isRightBlock);
             break;
         }
     }
@@ -488,8 +497,9 @@ Primitive.registerListeners = function(block, events) {
             adapter.bindToDoc(eventName, function(e) {
                 var originalTriggeredBlock = getBlockFromEvent(e);
 
-                if (!originalTriggeredBlock)
+                if (!originalTriggeredBlock) {
                     return;
+                }
 
                 registered[eventName].some(function(block) {
                     var triggeredBlock = originalTriggeredBlock;
@@ -653,7 +663,7 @@ Primitive.prototype = {
     handleEvent: function(e) {
         function prepareIterableScope(elem) {
             var adapter = require('../vars').adapter;
-            var adaptedElement = adapter(elem)
+            var adaptedElement = adapter(elem);
             var json = adaptedElement.attr(DATA_ATTRIBUTE);
 
             if (json) {
@@ -710,11 +720,14 @@ Primitive.prototype = {
     },
 
     toBemjson: function() {
+        var blocks;
+        var block;
+
         this._loops = this._loops || ((this.parent || {})._loops ? this.parent._loops.slice() : []);
 
         if (this._iterable) {
             this._loops.push(this._iteratingBindingName);
-            var blocks = this._collection.models.map(function(model, index) {
+            blocks = this._collection.models.map(function(model, index) {
                 this.scope[this._iteratingBindingName] = model;
 
                 var models = this._getModels();
@@ -724,15 +737,18 @@ Primitive.prototype = {
                     index: index
                 });
 
-                if (!this.isShown(models))
+                if (!this.isShown(models)) {
                     return null;
+                }
 
                 return this._formatData({
                     block: this._name,
                     mods: this._getMods(),
-                    content: this._content ? this._content.apply(null, models) : (this._children || []).map(function(child) {
-                        return child.toBemjson();
-                    }, this),
+                    content: this._content
+                        ? this._content.apply(null, models)
+                        : (this._children || []).map(function(child) {
+                            return child.toBemjson();
+                        }, this),
                     attrs: utils.extend(loopAttrs, this._getAttrs())
                 });
             }, this);
@@ -741,7 +757,7 @@ Primitive.prototype = {
                 return null;
             }
 
-            var block = this._formatData({
+            block = this._formatData({
                 block: this._name,
                 mods: this._getMods(),
                 // getchildrenorcontent
@@ -783,6 +799,8 @@ Primitive.prototype = {
             return;
         }
 
+        var html;
+
         if (this.isWasShown()) {
             var domNode = this.getDomElement();
 
@@ -792,7 +810,7 @@ Primitive.prototype = {
             var prev = this.getPreviousSibling();
 
             if (!prev) {
-                var html = this.toHTML();
+                html = this.toHTML();
 
                 if (!this.parent) {
                     adapter(adapter().root).prepend(html);
@@ -819,7 +837,7 @@ Primitive.prototype = {
                 if (this.parent) {
                     this.parent.getDomElement().prepend(html);
                 } else {
-                    var html = this.toHTML();
+                    html = this.toHTML();
                     adapter(adapter().root).prepend(html);
                 }
             }
@@ -873,10 +891,10 @@ module.exports =  {
 
 },{"./adapters":3,"./bem":8,"./utils":14,"./vars":15}],12:[function(require,module,exports){
 function FixmeError(message) {
-    this.message = message
+    this.message = message;
 }
 
-FixmeError.prototype = new Error;
+FixmeError.prototype = new Error();
 FixmeError.constructor = FixmeError;
 FixmeError.name = 'FIXME';
 
