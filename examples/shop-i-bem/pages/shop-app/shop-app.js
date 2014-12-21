@@ -1,6 +1,6 @@
 var App = Backbone.Model.extend({
     defaults: {
-        text: '123'
+        accepted: false
     }
 });
 
@@ -29,6 +29,10 @@ var products = new Products([
 bh.match('product__title', function(ctx) {
     ctx.tag('span');
 });
+
+function cartIsNotEmpty() {
+    return cart.models.length !== 0;
+}
 
 $(function() {
     var bemjson = [{
@@ -61,25 +65,69 @@ $(function() {
             }]
         },
     }, {
-        block: 'cart-logo'
-    }, {
-        block: 'cart',
-        content: {
-            block: 'product',
-            mods: {
-                'in-cart': 'yes'
-            },
-            iterate: 'product in cart',
-            bind: 'product',
-            content: function(product) {
-                return product.get('name');
+        block: 'popup',
+        content: [{
+            block: 'cart-logo'
+        }, {
+            block: 'cart',
+            content: {
+                block: 'product',
+                mods: {
+                    'in-cart': 'yes'
+                },
+                iterate: 'product in cart',
+                bind: 'product',
+                content: function(product) {
+                    return product.get('name');
+                }
             }
-        }
-    }, {
-        block: 'checkbox',
-        onChange: function(e) {
-            app.set('text', e.target.checked ? 'checked' : 'unchecked');
-        }
+        }, {
+            block: 'order',
+            content: [{
+                elem: 'header',
+                tag: 'h3',
+                bind: 'cart',
+                content: function(products) {
+                    var length = products.models.length;
+
+                    switch (length) {
+                        case 0:
+                            return 'В корзине ничего нет :(';
+
+                        case 1:
+                            return 'Нужно больше айфонов!';
+
+                        default:
+                            return 'Пора оформлять заказ';
+                    }
+                }
+            }, {
+                elem: 'text',
+                bind: 'cart',
+                showIf: cartIsNotEmpty,
+                tag: 'span',
+                content: 'Чекбокс, подтверждающий, что вы нажали на чекбокс ☞'
+            }, {
+                block: 'checkbox',
+                bind: ['cart', 'app'],
+                showIf: cartIsNotEmpty,
+                onClick: function() {
+                    console.log('onClick');
+                    app.set('accepted', true);
+                }
+            }, {
+                block: 'button',
+                content: 'оформить заказ',
+                bind: 'cart',
+                mods: {
+                    disabled: function() {
+                        console.log('redraw disabled');
+                        return (cartIsNotEmpty() && app.get('accepted')) ? '' : 'yes';
+                    },
+                    name: 'order'
+                }
+            }]
+        }]
     }];
 
     bj.init({

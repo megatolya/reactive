@@ -1,9 +1,11 @@
-.button {
+.button
+{
     cursor: pointer;
     position: relative;
 }
 
-.button__input {
+.button__input
+{
     cursor: pointer;
     position: absolute;
     width: 100%;
@@ -11,7 +13,8 @@
     z-index: 1;
 }
 
-.button__text {
+.button__text
+{
     cursor: pointer;
     border: 1px solid gray;
     position: relative;
@@ -28,4 +31,10 @@
 .button_active_yes .button__text
 {
     background-color: rgb(253, 253, 253);
+}
+
+.button_name_order
+{
+    line-height: 40px;
+    font-size: 19px;
 }

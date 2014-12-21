@@ -84,7 +84,7 @@ BemAdapter.getBlockFromElement = function(element) {
         return getBlockById(id);
     }
 
-    while(parent = parent.parent() && parent.length !== 0) {
+    while (parent = parent.parent() && parent.length !== 0) {
         id = parent.attr(ID_ATTRIBUTE);
 
         if (id) {
