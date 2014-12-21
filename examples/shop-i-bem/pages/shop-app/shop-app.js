@@ -111,8 +111,7 @@ $(function() {
                 block: 'checkbox',
                 bind: ['cart', 'app'],
                 showIf: cartIsNotEmpty,
-                onClick: function() {
-                    console.log('onClick');
+                onChange: function() {
                     app.set('accepted', true);
                 }
             }, {
@@ -121,7 +120,6 @@ $(function() {
                 bind: 'cart',
                 mods: {
                     disabled: function() {
-                        console.log('redraw disabled');
                         return (cartIsNotEmpty() && app.get('accepted')) ? '' : 'yes';
                     },
                     name: 'order'

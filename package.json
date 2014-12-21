@@ -35,7 +35,7 @@
   },
   "scripts": {
     "test": "./node_modules/.bin/mocha  --reporter nyan tests/spec/**",
-    "jshint": "jshint .",
+    "jshint": "jshint src",
     "check-style": "./node_modules/jscs/bin/jscs src/",
     "check": "npm run-script check-style && npm run-script jshint",
     "install": "echo \"npm run-script check\" > .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit"
